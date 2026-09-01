@@ -9,10 +9,9 @@
         & "$env:LOCALAPPDATA\Jarvis\uninstall.ps1"
 
     Only install.ps1 is published anywhere. If the install is too broken to
-    run its own copy, fetch this one from the repo instead - fill in the same
-    RAW_INSTALL_URL host install.ps1 came from:
+    run its own copy, fetch this one from the repo instead:
 
-        irm <RAW_UNINSTALL_URL> | iex
+        irm https://raw.githubusercontent.com/eedeb/FreeClaw-Jarvis/main/uninstall.ps1 | iex
 
     Stops Jarvis if it's running, removes the shortcut and the PATH entry,
     and deletes the install directory - the private Python, the checkout,

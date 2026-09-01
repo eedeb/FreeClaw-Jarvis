@@ -47,7 +47,7 @@ irm https://freeclaw.eedeb.dev/install.ps1 | iex
 Then Jarvis:
 
 ```powershell
-irm https://raw.githubusercontent.com/OWNER/REPO/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/eedeb/FreeClaw-Jarvis/main/install.ps1 | iex
 ```
 
 No administrator rights, nothing else to install by hand. It clones itself

@@ -3,7 +3,7 @@
     Jarvis - Windows installer.
 
 .DESCRIPTION
-    irm <RAW_INSTALL_URL> | iex
+    irm https://raw.githubusercontent.com/eedeb/FreeClaw-Jarvis/main/install.ps1 | iex
 
     Clones Jarvis into %LOCALAPPDATA%\Jarvis, fetches a private copy of
     Python for it, installs the dependencies, connects it to a local FreeClaw
@@ -65,8 +65,7 @@ $ErrorActionPreference = "Stop"
 # slower than it needs to be.
 $ProgressPreference = "SilentlyContinue"
 
-# TODO before publishing: point this at the real repository.
-$RepoUrl = "https://github.com/OWNER/REPO"
+$RepoUrl = "https://github.com/eedeb/FreeClaw-Jarvis"
 $PythonVersion = "3.12.8"
 
 # -- parameters, or the environment when piped through iex ----
