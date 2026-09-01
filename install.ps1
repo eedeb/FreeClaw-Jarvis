@@ -263,6 +263,16 @@ if (-not (Test-Path $PyExe)) {
     if (-not (Test-Path (Join-Path $PyDir "Lib\site-packages\pip"))) {
         Die "Couldn't bootstrap pip into the bundled Python."
     }
+    # get-pip.py stopped bundling these a while back. Most of what's in
+    # requirements.txt ships prebuilt wheels and would never miss them, but
+    # eel itself is sdist-only on PyPI, and building an sdist's wheel is
+    # exactly what setuptools.build_meta is for - without it here, the very
+    # first `pip install -r requirements.txt` fails on eel with
+    # "BackendUnavailable: Cannot import 'setuptools.build_meta'".
+    if ((Native $PyExe @("-m", "pip", "install", "--no-cache-dir", "--no-warn-script-location",
+                         "setuptools", "wheel")) -ne 0) {
+        Die "Couldn't install setuptools/wheel into the bundled Python."
+    }
     Ok "python $PythonVersion installed privately"
 } else {
     Info "using the Python already in $PyDir"

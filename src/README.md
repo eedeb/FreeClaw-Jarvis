@@ -12,7 +12,12 @@ onedir, CPython 3.11). For the app as it now stands, see
 | `resource_path.py` | decompiled from `resource_path.pyc` | reconstructed, verified — still in use |
 | `ui/index.html`, `ui/script.js`, `ui/style.css` | shipped verbatim in `_internal/ui` | original, one bug fix (see project README) |
 | `ui/UI.py` | shipped verbatim as a data file | original source, now genuinely imported |
-| `Assets/`, `audio/` | copied from `_internal` | original (`chromedriver.exe`, 18 MB, left in `_internal/Assets`) |
+| `Assets/`, `audio/` | copied from `_internal` | original |
+
+`MarkLite.exe` and the `_internal/` PyInstaller bundle it was decompiled from
+aren't part of this repository — 245MB of binaries (including an 18MB
+`chromedriver.exe` nothing here uses) with no reason to ship once the pieces
+above were extracted from them.
 
 ### Verification
 
@@ -28,8 +33,8 @@ dedenting), not source differences.
 `modules.vocalize.coqui` (`speak`) and `modules.vocalize.speechjs`
 (`SpeechToTextListener`), but no `modules/` package existed in the exe's PYZ
 archive or in `_internal/`, so the app raised `ImportError` at startup and
-could never have run. `vocalize.py` now supplies `speak()`; voice input is
-still a placeholder.
+could never have run. `vocalize.py` now supplies `speak()`, and `listen.py`
+supplies real voice input — see the project README.
 
 **The front-end and back-end did not match.** `ui/` is the full version's UI
 and calls ~43 Python functions; `main_free.py` exposed four, and the names did
@@ -50,5 +55,6 @@ looking for `groq_api_key_api_keys[]` (preferring the entry matching
 active entry, then a flat `groq_api_key`. None of that is used any more — LLM
 credentials are FreeClaw providers now.
 
-The `.env` at the project root was never read by this code path: `main_free.py`
-imported `os.environ` but never used it.
+The exe shipped with a 30-byte `.env` at the project root, never read by this
+code path either — `main_free.py` imported `os.environ` but never used it.
+Removed rather than carried forward.

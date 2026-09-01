@@ -34,36 +34,45 @@ this machine's regardless.
 
 ---
 
-## Setup
+## Install
 
-Needs a running FreeClaw with at least one provider configured under
-**Settings → Providers**.
+Needs [FreeClaw](https://freeclaw.eedeb.dev) on the same machine, with at
+least one provider configured under **Settings → Providers** — Jarvis has
+nothing to think with otherwise. Install that first if you haven't:
 
-```
-Setup.cmd
-```
-
-Or, from `src/`:
-
-```
-python setup.py --url 127.0.0.1:6767 --password YOUR_FC_PASSWORD
+```powershell
+irm https://freeclaw.eedeb.dev/install.ps1 | iex
 ```
 
-It logs in, creates the FreeClaw user **Jarvis**, writes the persona into that
-user's `context.md`, registers this project's MCP server over stdio, switches
-FreeClaw's OpenAI-compatible API on, and saves the connection details. It is
-idempotent — re-run it after editing `src/jarvis_persona.md` to push the new
-persona and reset the conversation so it takes effect.
+Then Jarvis:
 
-Then:
-
-```
-Jarvis.cmd
+```powershell
+irm https://raw.githubusercontent.com/OWNER/REPO/main/install.ps1 | iex
 ```
 
-The first run downloads the wake-word and speech-to-text models (a few
-megabytes, cached after) and opens the default microphone — say "Hey Jarvis"
-once the window is up.
+No administrator rights, nothing else to install by hand. It clones itself
+into `%LOCALAPPDATA%\Jarvis`, fetches a private copy of Python so it never
+touches anything else on the machine, installs the dependencies, and connects
+to FreeClaw automatically — the password comes straight out of FreeClaw's own
+`.env`, since they're on the same machine as the same Windows user, so
+there's nothing to type. If FreeClaw isn't installed at all, it says so and
+stops rather than installing something with nothing to talk to yet; if
+FreeClaw is installed but not running, it finishes everything else and tells
+you to run `jarvis-setup` once it's up.
+
+Re-running the installer is the update path — code refreshed, your settings
+left alone. Uninstall with `& "$env:LOCALAPPDATA\Jarvis\uninstall.ps1"`.
+
+Once it's running, say "Hey Jarvis" — or edit `src/jarvis_persona.md` and run
+`jarvis-setup` to push the change (idempotent, safe to run any time; also
+what re-connects Jarvis if FreeClaw's install ever moves).
+
+### Local development
+
+Working from a clone instead of the installer: `python -m venv .venv`,
+`pip install -r requirements.txt`, then `python src/setup.py` and
+`python src/main.py` (or `Setup.cmd` / `Jarvis.cmd`, which assume that same
+`.venv` layout).
 
 ## What lives where
 
@@ -80,6 +89,8 @@ once the window is up.
 | `src/jarvis_config.py` | Connection details and UI preferences. |
 | `src/ui/` | The original front-end, unchanged but for a few additions/fixes. |
 | `src/main_free.py` | The decompiled original entry point. Superseded — kept for reference. |
+| `install.ps1` / `uninstall.ps1` | The public installer (`irm ... \| iex`) and its counterpart. |
+| `windows/` | `.cmd` shims and the Start Menu icon the installer copies into place. |
 
 ## The MCP tools
 
