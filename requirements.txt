@@ -1,0 +1,17 @@
+# Jarvis (Mark Lite) — front-end shell + FreeClaw bridge
+eel>=0.16.0
+requests>=2.31.0
+edge-tts>=6.1.0
+pygame>=2.5.0
+mss>=9.0.1
+Pillow>=10.0.0
+
+# Voice input — see src/listen.py
+sounddevice>=0.4.6        # microphone I/O
+openwakeword>=0.6.0       # "Hey Jarvis" wake word, runs continuously
+onnxruntime>=1.16.0       # openwakeword's inference backend
+tqdm>=4.66.0               # openwakeword's model-download progress bar
+webrtcvad-wheels>=2.0.11  # end-of-speech detection (prebuilt wheels — the
+                           # plain webrtcvad package needs a C compiler on
+                           # Windows, which a fresh install can't assume)
+faster-whisper>=1.0.0     # local speech-to-text (tiny.en, int8, CPU)

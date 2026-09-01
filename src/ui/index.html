@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap"
+        rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARK 5</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="icon-192.png" type="image/png">
+    <script type="text/javascript" src="/eel.js"></script>
+    <script>eel.expose(get_base_url); function get_base_url() { return eel._base_url }</script>
+    <!-- Inline drag/drop prevention - must be early to catch Chrome's default behavior -->
+    <script>
+        // Prevent Chrome's default drag navigation immediately - CRITICAL for preventing new tab
+        (function () {
+            function preventDefaultDrag(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+
+            function preventDefaultDrop(e) {
+                // ONLY prevent default, don't stop propagation so our handler can process it
+                e.preventDefault();
+                e.returnValue = false;
+                console.log('Inline drop handler fired - preventing default (allowing propagation)');
+                // DON'T call stopPropagation or stopImmediatePropagation here
+                // We want our script.js handler to still fire
+                return false;
+            }
+
+            // CRITICAL: Prevent drop BEFORE Chrome handles it
+            // Add immediately to document - use capture phase to run first
+            document.addEventListener('dragover', preventDefaultDrag, true);
+            document.addEventListener('dragenter', preventDefaultDrag, true);
+            document.addEventListener('drop', preventDefaultDrop, true);
+
+            // Also add to window - this is crucial
+            window.addEventListener('dragover', preventDefaultDrag, true);
+            window.addEventListener('dragenter', preventDefaultDrag, true);
+            window.addEventListener('drop', preventDefaultDrop, true);
+
+            // Add to documentElement (html element) too
+            if (document.documentElement) {
+                document.documentElement.addEventListener('dragover', preventDefaultDrag, true);
+                document.documentElement.addEventListener('dragenter', preventDefaultDrag, true);
+                document.documentElement.addEventListener('drop', preventDefaultDrop, true);
+            }
+        })();
+    </script>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700&display=swap">
+
+</head>
+
+<body>
+    <!-- Settings Button -->
+    <button id="settings-button" class="settings-button" title="Settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path
+                d="M19.4 15C19.2669 15.3016 19.2272 15.6362 19.286 15.9606C19.3448 16.285 19.4995 16.5843 19.73 16.82L19.79 16.88C19.976 17.0657 20.1235 17.2863 20.2241 17.5291C20.3248 17.7719 20.3766 18.0322 20.3766 18.295C20.3766 18.5578 20.3248 18.8181 20.2241 19.0609C20.1235 19.3037 19.976 19.5243 19.79 19.71C19.6043 19.896 19.3837 20.0435 19.1409 20.1441C18.8981 20.2448 18.6378 20.2966 18.375 20.2966C18.1122 20.2966 17.8519 20.2448 17.6091 20.1441C17.3663 20.0435 17.1457 19.896 16.96 19.71L16.9 19.65C16.6643 19.4195 16.365 19.2648 16.0406 19.206C15.7162 19.1472 15.3816 19.1869 15.08 19.32C14.7842 19.4468 14.532 19.6572 14.3543 19.9255C14.1766 20.1938 14.0813 20.5082 14.08 20.83V21C14.08 21.5304 13.8693 22.0391 13.4942 22.4142C13.1191 22.7893 12.6104 23 12.08 23C11.5496 23 11.0409 22.7893 10.6658 22.4142C10.2907 22.0391 10.08 21.5304 10.08 21V20.91C10.0723 20.579 9.96512 20.258 9.77251 19.9867C9.5799 19.7154 9.31074 19.5053 9 19.38C8.69838 19.2469 8.36381 19.2072 8.03941 19.266C7.71502 19.3248 7.41568 19.4795 7.18 19.71L7.12 19.77C6.93425 19.956 6.71368 20.1035 6.47088 20.2041C6.22808 20.3048 5.96783 20.3566 5.705 20.3566C5.44217 20.3566 5.18192 20.3048 4.93912 20.2041C4.69632 20.1035 4.47575 19.956 4.29 19.77C4.10405 19.5843 3.95653 19.3637 3.85588 19.1209C3.75523 18.8781 3.70343 18.6178 3.70343 18.355C3.70343 18.0922 3.75523 17.8319 3.85588 17.5891C3.95653 17.3463 4.10405 17.1257 4.29 16.94L4.35 16.88C4.58054 16.6443 4.73519 16.345 4.794 16.0206C4.85282 15.6962 4.81312 15.3616 4.68 15.06C4.55324 14.7642 4.34276 14.512 4.07447 14.3343C3.80618 14.1566 3.49179 14.0613 3.17 14.06H3C2.46957 14.06 1.96086 13.8493 1.58579 13.4742C1.21071 13.0991 1 12.5904 1 12.06C1 11.5296 1.21071 11.0209 1.58579 10.6458C1.96086 10.2707 2.46957 10.06 3 10.06H3.09C3.42099 10.0523 3.742 9.94512 4.01331 9.75251C4.28462 9.5599 4.49466 9.29074 4.62 8.98C4.75312 8.67838 4.79282 8.34381 4.734 8.01941C4.67519 7.69502 4.52054 7.39568 4.29 7.16L4.23 7.1C4.04405 6.91425 3.89653 6.69368 3.79588 6.45088C3.69523 6.20808 3.64343 5.94783 3.64343 5.685C3.64343 5.42217 3.69523 5.16192 3.79588 4.91912C3.89653 4.67632 4.04405 4.45575 4.23 4.27C4.41575 4.08405 4.63632 3.93653 4.87912 3.83588C5.12192 3.73523 5.38217 3.68343 5.645 3.68343C5.90783 3.68343 6.16808 3.73523 6.41088 3.83588C6.65368 3.93653 6.87425 4.08405 7.06 4.27L7.12 4.33C7.35568 4.56054 7.65502 4.71519 7.97941 4.774C8.30381 4.83282 8.63838 4.79312 8.94 4.66H9C9.29577 4.53324 9.54802 4.32276 9.72569 4.05447C9.90337 3.78618 9.99872 3.47179 10 3.15V3C10 2.46957 10.2107 1.96086 10.5858 1.58579C10.9609 1.21071 11.4696 1 12 1C12.5304 1 13.0391 1.21071 13.4142 1.58579C13.7893 1.96086 14 2.46957 14 3V3.09C14.0013 3.41179 14.0966 3.72618 14.2743 3.99447C14.452 4.26276 14.7042 4.47324 15 4.6C15.3016 4.73312 15.6362 4.77282 15.9606 4.714C16.285 4.65519 16.5843 4.50054 16.82 4.27L16.88 4.21C17.0657 4.02405 17.2863 3.87653 17.5291 3.77588C17.7719 3.67523 18.0322 3.62343 18.295 3.62343C18.5578 3.62343 18.8181 3.67523 19.0609 3.77588C19.3037 3.87653 19.5243 4.02405 19.71 4.21C19.896 4.39575 20.0435 4.61632 20.1441 4.85912C20.2448 5.10192 20.2966 5.36217 20.2966 5.625C20.2966 5.88783 20.2448 6.14808 20.1441 6.39088C20.0435 6.63368 19.896 6.85425 19.71 7.04L19.65 7.1C19.4195 7.33568 19.2648 7.63502 19.206 7.95941C19.1472 8.28381 19.1869 8.61838 19.32 8.92V9C19.4468 9.29577 19.6572 9.54802 19.9255 9.72569C20.1938 9.90337 20.5082 9.99872 20.83 10H21C21.5304 10 22.0391 10.2107 22.4142 10.5858C22.7893 10.9609 23 11.4696 23 12C23 12.5304 22.7893 13.0391 22.4142 13.4142C22.0391 13.7893 21.5304 14 21 14H20.91C20.5882 14.0013 20.2738 14.0966 20.0055 14.2743C19.7372 14.452 19.5268 14.7042 19.4 15Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+    </button>
+
+    <!-- Settings Panel -->
+    <div id="settings-panel" class="settings-panel">
+        <div class="settings-panel-header">
+            <h2 class="settings-panel-title">Settings</h2>
+            <button id="settings-close" class="settings-close" title="Close">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
+        </div>
+        <!-- Main Settings View -->
+        <div id="settings-main-view" class="settings-view active">
+            <div class="settings-panel-content">
+                <div class="settings-option">
+                    <label class="settings-label">
+                        <span class="settings-label-text">Assistant Name</span>
+                        <span class="settings-label-desc">Change the name of your assistant</span>
+                    </label>
+                    <input type="text" id="assistant-name-input" class="settings-input" placeholder="Enter name">
+                </div>
+
+                <div class="settings-option">
+                    <label class="settings-label">
+                        <span class="settings-label-text">Do Not Disturb</span>
+                        <span class="settings-label-desc">Disables proactive conversations</span>
+                    </label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dnd-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="settings-option">
+                    <label class="settings-label">
+                        <span class="settings-label-text">Black Screen</span>
+                        <span class="settings-label-desc">Toggle black screen overlay</span>
+                    </label>
+                    <button id="black-screen-toggle" class="black-screen-button" title="Toggle Black Screen">
+                    </button>
+                </div>
+
+                <div class="settings-navigation">
+                    <button id="api-keys-nav-btn" class="nav-button">
+                        <span class="nav-button-text">API Keys</span>
+                    </button>
+                    <button id="memory-nav-btn" class="nav-button">
+                        <span class="nav-button-text">Long-Term Memory</span>
+                    </button>
+                    <button id="kasa-nav-btn" class="nav-button">
+                        <span class="nav-button-text">Kasa Lights</span>
+                    </button>
+                    <button id="alarms-nav-btn" class="nav-button">
+                        <span class="nav-button-text">Alarms</span>
+                    </button>
+                    <button id="workspaces-nav-btn" class="nav-button">
+                        <span class="nav-button-text">Workspaces</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Keys View -->
+        <div id="settings-api-keys-view" class="settings-view">
+            <div class="settings-panel-content">
+                <div class="memory-view-header">
+                    <button id="api-keys-back-btn" class="back-button" title="Back to Settings">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                    <h3 class="memory-section-title">API Keys</h3>
+                </div>
+                <div id="api-keys-list" class="api-keys-list">
+                    <div class="no-memories">Loading API keys...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Individual API Key Service View -->
+        <div id="settings-api-key-service-view" class="settings-view">
+            <div class="settings-panel-content">
+                <div class="memory-view-header">
+                    <button id="api-key-service-back-btn" class="back-button" title="Back to API Keys">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                    <h3 class="memory-section-title" id="api-key-service-title">API Keys</h3>
+                </div>
+                <div id="api-key-service-keys-list" class="api-keys-list">
+                    <div class="no-memories">Loading keys...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Memory View -->
+        <div id="settings-memory-view" class="settings-view">
+            <div class="settings-panel-content">
+                <div class="memory-view-header">
+                    <button id="memory-back-btn" class="back-button" title="Back to Settings">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                    <h3 class="memory-section-title">Long-Term Memory</h3>
+                </div>
+                <div class="memory-search-container">
+                    <input type="text" id="memory-search-input" class="memory-search-input"
+                        placeholder="Search memories...">
+                </div>
+                <div id="memories-list" class="memories-list">
+                    <div class="no-memories">Loading memories...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kasa Devices View -->
+        <div id="settings-kasa-view" class="settings-view">
+            <div class="settings-panel-content">
+                <div class="memory-view-header">
+                    <button id="kasa-back-btn" class="back-button" title="Back to Settings">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                    <h3 class="memory-section-title">Kasa Smart Lights</h3>
+                </div>
+                <div id="kasa-devices-list" class="api-keys-list">
+                    <div class="no-memories">Loading devices...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alarms View -->
+        <div id="settings-alarms-view" class="settings-view">
+            <div class="settings-panel-content">
+                <div class="memory-view-header">
+                    <button id="alarms-back-btn" class="back-button" title="Back to Settings">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                    <h3 class="memory-section-title">Alarms</h3>
+                </div>
+                <div id="alarms-list" class="api-keys-list">
+                    <div class="no-memories">Loading alarms...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workspaces View -->
+        <div id="settings-workspaces-view" class="settings-view">
+            <div class="settings-panel-content">
+                <div class="memory-view-header">
+                    <button id="workspaces-back-btn" class="back-button" title="Back to Settings">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                    <h3 class="memory-section-title">Workspaces</h3>
+                </div>
+                <div id="workspaces-list" class="api-keys-list">
+                    <div class="no-memories">Loading workspaces...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel Overlay -->
+    <div id="settings-overlay" class="settings-overlay"></div>
+
+    <!-- Black Screen Overlay -->
+    <div id="black-screen-overlay" class="black-screen-overlay"></div>
+
+    <!-- Jarvis UI -->
+    <!-- Existing Jarvis UI remains the same -->
+    <div class="jarvis-container">
+        <div class="container-glow"></div>
+        <div class="outer-circle"></div>
+        <div class="processing-ring"></div>
+        <div class="inner-circle"></div>
+        <div class="jarvis-text" id="assistant-name-display" style="text-transform: uppercase;">
+        </div>
+    </div>
+
+    <!-- Mode Selector -->
+
+
+    <!-- Text Output Area -->
+    <div id="output-area" style="font-family: 'Exo';">
+        <!-- Text will be printed here -->
+    </div>
+
+    <!-- Bottom-Left Output -->
+    <div id="bottom-left-output-wrapper">
+        <div id="bottom-left-output">
+            <span id="bottom-left-text" style="font-family: 'Exo';"></span>
+        </div>
+    </div>
+
+    <!-- Ultra-subtle Text Input Area -->
+    <div id="text-input-container">
+        <svg id="chat-icon" width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M21 12C21 16.9706 16.9706 21 12 21C10.2385 21 8.59412 20.5217 7.2 19.68L3 21L4.32 16.8C3.47825 15.4059 3 13.7615 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                fill="none" stroke="rgba(200, 220, 255, 0.8)" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+        </svg>
+        <input type="text" id="text-input" placeholder="" autocomplete="off">
+    </div>
+
+    <script>
+        /*
+        // Remove or comment out this block since this element doesn't exist
+        document.getElementById('toggle-chat-mode').addEventListener('click', function() {
+            eel.toggle_chat_mode()(function(is_chat_mode) {
+                updateChatModeDisplay(is_chat_mode);
+            });
+        });
+
+        function updateChatModeDisplay(is_chat_mode) {
+            const modeIndicator = document.getElementById('mode-indicator');
+            if (is_chat_mode) {
+                modeIndicator.textContent = 'Chat Mode';
+                modeIndicator.className = 'mode-indicator chat-mode';
+            } else {
+                modeIndicator.textContent = 'Command Mode';
+                modeIndicator.className = 'mode-indicator command-mode';
+            }
+        }
+
+        // Function to be called from Python
+        eel.expose(update_chat_mode);
+        function update_chat_mode(is_chat_mode) {
+            updateChatModeDisplay(is_chat_mode);
+        }
+        */
+
+        // Keep the Enter key handler
+        document.getElementById('text-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const textInput = document.getElementById('text-input');
+                const message = textInput.value.trim();
+
+                if (message) {
+                    console.log("Sending message: " + message);  // Debug line
+
+                    // Display the user message in the output area
+                    try {
+                        if (typeof eel !== 'undefined' && eel.printToOutput) eel.printToOutput("User: " + message);
+                        else console.log("Eel not available: ", message);
+                    } catch (err) {
+                        console.error('Error calling eel.printToOutput', err);
+                    }
+
+                    // Send the message to Jarvis (async)
+                    try {
+                        if (typeof eel !== 'undefined' && eel.process_text_input) {
+                            eel.process_text_input(message);
+                        } else {
+                            console.warn('Eel.process_text_input not available; local fallback only.');
+                        }
+                    } catch (err) {
+                        console.error('Error calling eel.process_text_input', err);
+                    }
+
+                    // Clear the input field
+                    textInput.value = '';
+                }
+            }
+        });
+
+        // Get assistant name from Python when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            // Expose and call the Python function to get assistant name
+            eel.get_assistant_name()(function (name) {
+                // Update the display name in the UI
+                document.getElementById('assistant-name-display').textContent = name;
+                // Update the placeholder text
+                document.getElementById('text-input').placeholder = `Message ${name}...`;
+            });
+
+            // Initialize settings panel
+            initSettingsPanel();
+        });
+
+        // Function to show memory saved indicator (global for eel access)
+        function showMemorySavedIndicator() {
+            const settingsButton = document.getElementById('settings-button');
+            if (settingsButton) {
+                settingsButton.classList.add('memory-saved');
+                setTimeout(() => {
+                    settingsButton.classList.remove('memory-saved');
+                }, 2500); // 2.5 seconds
+            }
+        }
+        eel.expose(showMemorySavedIndicator);
+
+        // Settings Panel Functions
+        function initSettingsPanel() {
+            const settingsButton = document.getElementById('settings-button');
+            const settingsPanel = document.getElementById('settings-panel');
+            const settingsClose = document.getElementById('settings-close');
+            const settingsOverlay = document.getElementById('settings-overlay');
+            const dndToggle = document.getElementById('dnd-toggle');
+            const assistantNameInput = document.getElementById('assistant-name-input');
+            const mainView = document.getElementById('settings-main-view');
+            const apiKeysView = document.getElementById('settings-api-keys-view');
+            const apiKeyServiceView = document.getElementById('settings-api-key-service-view');
+            const memoryView = document.getElementById('settings-memory-view');
+            const apiKeysNavBtn = document.getElementById('api-keys-nav-btn');
+            const apiKeysBackBtn = document.getElementById('api-keys-back-btn');
+            const apiKeyServiceBackBtn = document.getElementById('api-key-service-back-btn');
+            const memoryNavBtn = document.getElementById('memory-nav-btn');
+            const memoryBackBtn = document.getElementById('memory-back-btn');
+            const kasaNavBtn = document.getElementById('kasa-nav-btn');
+            const kasaBackBtn = document.getElementById('kasa-back-btn');
+            const kasaView = document.getElementById('settings-kasa-view');
+            const alarmsNavBtn = document.getElementById('alarms-nav-btn');
+            const alarmsBackBtn = document.getElementById('alarms-back-btn');
+            const alarmsView = document.getElementById('settings-alarms-view');
+            const workspacesNavBtn = document.getElementById('workspaces-nav-btn');
+            const workspacesBackBtn = document.getElementById('workspaces-back-btn');
+            const workspacesView = document.getElementById('settings-workspaces-view');
+            const blackScreenToggle = document.getElementById('black-screen-toggle');
+            const blackScreenOverlay = document.getElementById('black-screen-overlay');
+
+            // Black screen toggle functionality
+            if (blackScreenToggle && blackScreenOverlay) {
+                blackScreenToggle.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    blackScreenOverlay.classList.toggle('active');
+                });
+
+                blackScreenOverlay.addEventListener('click', function () {
+                    blackScreenOverlay.classList.remove('active');
+                });
+            }
+
+            // Load current assistant name
+            eel.get_assistant_name()(function (name) {
+                if (assistantNameInput) {
+                    assistantNameInput.value = name;
+                    assistantNameInput.defaultValue = name;
+                }
+            });
+
+            // Load current DND state
+            eel.get_do_not_disturb()(function (dndState) {
+                dndToggle.checked = dndState;
+            });
+
+            // View switching functions
+            function showMainView() {
+                mainView.classList.add('active');
+                apiKeysView.classList.remove('active');
+                apiKeyServiceView.classList.remove('active');
+                memoryView.classList.remove('active');
+                kasaView.classList.remove('active');
+                alarmsView.classList.remove('active');
+                workspacesView.classList.remove('active');
+            }
+
+            function showApiKeysView() {
+                mainView.classList.remove('active');
+                apiKeysView.classList.add('active');
+                apiKeyServiceView.classList.remove('active');
+                memoryView.classList.remove('active');
+                kasaView.classList.remove('active');
+                alarmsView.classList.remove('active');
+                workspacesView.classList.remove('active');
+                loadApiKeys(); // Load API keys when navigating to API keys view
+            }
+
+            function showApiKeyServiceView(serviceName) {
+                mainView.classList.remove('active');
+                apiKeysView.classList.remove('active');
+                apiKeyServiceView.classList.add('active');
+                memoryView.classList.remove('active');
+                kasaView.classList.remove('active');
+                alarmsView.classList.remove('active');
+                workspacesView.classList.remove('active');
+                loadApiKeyService(serviceName); // Load keys for specific service
+            }
+
+            function showMemoryView() {
+                mainView.classList.remove('active');
+                apiKeysView.classList.remove('active');
+                apiKeyServiceView.classList.remove('active');
+                memoryView.classList.add('active');
+                kasaView.classList.remove('active');
+                alarmsView.classList.remove('active');
+                workspacesView.classList.remove('active');
+                loadMemories(); // Load memories when navigating to memory view
+            }
+
+            function showKasaView() {
+                mainView.classList.remove('active');
+                apiKeysView.classList.remove('active');
+                apiKeyServiceView.classList.remove('active');
+                memoryView.classList.remove('active');
+                kasaView.classList.add('active');
+                alarmsView.classList.remove('active');
+                workspacesView.classList.remove('active');
+                loadKasaDevices(); // Load Kasa devices when navigating to Kasa view
+            }
+
+            function showAlarmsView() {
+                mainView.classList.remove('active');
+                apiKeysView.classList.remove('active');
+                apiKeyServiceView.classList.remove('active');
+                memoryView.classList.remove('active');
+                kasaView.classList.remove('active');
+                alarmsView.classList.add('active');
+                workspacesView.classList.remove('active');
+                loadAlarms(); // Load alarms when navigating to alarms view
+            }
+
+            function showWorkspacesView() {
+                mainView.classList.remove('active');
+                apiKeysView.classList.remove('active');
+                apiKeyServiceView.classList.remove('active');
+                memoryView.classList.remove('active');
+                kasaView.classList.remove('active');
+                alarmsView.classList.remove('active');
+                workspacesView.classList.add('active');
+                loadWorkspaces(); // Load workspaces when navigating to workspaces view
+            }
+
+            // Toggle settings panel
+            function openSettings() {
+                settingsPanel.classList.add('active');
+                settingsOverlay.classList.add('active');
+                showMainView(); // Always show main view when opening settings
+            }
+
+            function closeSettings() {
+                settingsPanel.classList.remove('active');
+                settingsOverlay.classList.remove('active');
+                showMainView(); // Reset to main view when closing
+            }
+
+            // Event listeners
+            settingsButton.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (settingsPanel.classList.contains('active')) {
+                    closeSettings();
+                } else {
+                    openSettings();
+                }
+            });
+
+            settingsClose.addEventListener('click', closeSettings);
+            settingsOverlay.addEventListener('click', closeSettings);
+
+            // Navigation buttons
+            apiKeysNavBtn.addEventListener('click', function () {
+                showApiKeysView();
+            });
+
+            apiKeysBackBtn.addEventListener('click', function () {
+                showMainView();
+            });
+
+            apiKeyServiceBackBtn.addEventListener('click', function () {
+                showApiKeysView();
+            });
+
+            memoryNavBtn.addEventListener('click', function () {
+                showMemoryView();
+            });
+
+            memoryBackBtn.addEventListener('click', function () {
+                showMainView();
+            });
+
+            // Memory search functionality
+            const memorySearchInput = document.getElementById('memory-search-input');
+            if (memorySearchInput) {
+                memorySearchInput.addEventListener('input', function () {
+                    const query = this.value;
+                    const filteredMemories = filterMemories(query);
+                    displayMemories(filteredMemories);
+                });
+            }
+
+            kasaNavBtn.addEventListener('click', function () {
+                showKasaView();
+            });
+
+            kasaBackBtn.addEventListener('click', function () {
+                showMainView();
+            });
+
+            alarmsNavBtn.addEventListener('click', function () {
+                showAlarmsView();
+            });
+
+            alarmsBackBtn.addEventListener('click', function () {
+                showMainView();
+            });
+
+            workspacesNavBtn.addEventListener('click', function () {
+                showWorkspacesView();
+            });
+
+            workspacesBackBtn.addEventListener('click', function () {
+                showMainView();
+            });
+
+            // Load API keys function
+            function loadApiKeys() {
+                const apiKeysList = document.getElementById('api-keys-list');
+                if (!apiKeysList) {
+                    console.error('API keys list element not found');
+                    return;
+                }
+                apiKeysList.innerHTML = '<div class="no-memories">Loading API keys...</div>';
+
+                try {
+                    eel.get_all_api_keys()(function (apiKeys) {
+                        try {
+                            if (apiKeys && typeof apiKeys === 'object') {
+                                displayApiKeys(apiKeys);
+                            } else {
+                                console.error('Invalid API keys response:', apiKeys);
+                                apiKeysList.innerHTML = '<div class="no-memories">Error: Invalid response from server</div>';
+                            }
+                        } catch (e) {
+                            console.error('Error displaying API keys:', e);
+                            apiKeysList.innerHTML = '<div class="no-memories">Error loading API keys: ' + e.message + '</div>';
+                        }
+                    });
+                } catch (e) {
+                    console.error('Error calling get_all_api_keys:', e);
+                    apiKeysList.innerHTML = '<div class="no-memories">Error: Could not load API keys</div>';
+                }
+            }
+
+            // Display API keys function (service list view)
+            function displayApiKeys(apiKeys) {
+                const apiKeysList = document.getElementById('api-keys-list');
+                apiKeysList.innerHTML = '';
+
+                const apiKeyNames = Object.keys(apiKeys).sort();
+
+                if (apiKeyNames.length === 0) {
+                    apiKeysList.innerHTML = '<div class="no-memories">No API keys configured</div>';
+                    return;
+                }
+
+                apiKeyNames.forEach(function (keyName) {
+                    const serviceData = apiKeys[keyName];
+                    // Handle both old format (array) and new format (object with keys and selected_key_id)
+                    const keys = Array.isArray(serviceData) ? serviceData : (serviceData.keys || []);
+
+                    // Create service button (navigates to service view)
+                    const serviceButton = document.createElement('button');
+                    serviceButton.className = 'api-key-service-button';
+
+                    serviceButton.innerHTML = `
+                        <span class="api-key-service-name">${keyName.replace(/_/g, ' ')}</span>
+                        <span class="api-key-service-count">${keys.length} key${keys.length !== 1 ? 's' : ''}</span>
+                        <svg class="api-key-service-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    `;
+
+                    // Navigate to service view on click
+                    serviceButton.addEventListener('click', function () {
+                        showApiKeyServiceView(keyName);
+                    });
+
+                    apiKeysList.appendChild(serviceButton);
+                });
+            }
+
+            // Load and display keys for a specific service
+            function loadApiKeyService(serviceName) {
+                const serviceKeysList = document.getElementById('api-key-service-keys-list');
+                const serviceTitle = document.getElementById('api-key-service-title');
+
+                serviceTitle.textContent = serviceName.replace(/_/g, ' ');
+                serviceKeysList.innerHTML = '<div class="no-memories">Loading keys...</div>';
+
+                eel.get_all_api_keys()(function (apiKeys) {
+                    try {
+                        if (apiKeys && typeof apiKeys === 'object' && apiKeys[serviceName]) {
+                            const serviceData = apiKeys[serviceName];
+                            // Handle both old format (array) and new format (object with keys and selected_key_id)
+                            const keys = Array.isArray(serviceData) ? serviceData : (serviceData.keys || []);
+                            const selectedKeyId = Array.isArray(serviceData) ? null : (serviceData.selected_key_id || null);
+                            const preferredKeyId = Array.isArray(serviceData) ? null : (serviceData.preferred_key_id || null);
+                            displayApiKeyService(serviceName, keys, selectedKeyId, preferredKeyId);
+                        } else {
+                            serviceKeysList.innerHTML = '<div class="no-memories">No keys found for this service</div>';
+                        }
+                    } catch (e) {
+                        console.error('Error displaying service keys:', e);
+                        serviceKeysList.innerHTML = '<div class="no-memories">Error loading keys: ' + e.message + '</div>';
+                    }
+                });
+            }
+
+            // Display keys for a specific service
+            function displayApiKeyService(serviceName, keys, selectedKeyId, preferredKeyId) {
+                const serviceKeysList = document.getElementById('api-key-service-keys-list');
+                serviceKeysList.innerHTML = '';
+
+                if (!keys || keys.length === 0) {
+                    serviceKeysList.innerHTML = '<div class="no-memories">No keys configured for this service</div>';
+                }
+
+                // Add existing keys
+                keys.forEach(function (keyEntry) {
+                    const isSelected = selectedKeyId === keyEntry.id;
+                    const keyItem = createApiKeyItem(serviceName, keyEntry, isSelected, false);
+                    serviceKeysList.appendChild(keyItem);
+                });
+
+                // Add "Add New Key" section
+                const addKeyContainer = document.createElement('div');
+                addKeyContainer.className = 'api-key-add-container';
+
+                const addKeyInput = document.createElement('input');
+                addKeyInput.type = 'text';
+                addKeyInput.className = 'settings-input';
+                addKeyInput.placeholder = 'Enter new API key...';
+                addKeyInput.style.marginRight = '8px';
+
+                const addKeyNameInput = document.createElement('input');
+                addKeyNameInput.type = 'text';
+                addKeyNameInput.className = 'settings-input';
+                addKeyNameInput.placeholder = 'Name (optional)';
+                addKeyNameInput.style.marginRight = '8px';
+                addKeyNameInput.style.width = '150px';
+
+                const addKeyButton = document.createElement('button');
+                addKeyButton.className = 'api-key-add-button';
+                addKeyButton.textContent = 'Add Key';
+                addKeyButton.addEventListener('click', function () {
+                    const newKey = addKeyInput.value.trim();
+                    const keyName_custom = addKeyNameInput.value.trim();
+
+                    if (!newKey) {
+                        alert('Please enter an API key');
+                        return;
+                    }
+
+                    // Disable button during request
+                    addKeyButton.disabled = true;
+                    addKeyButton.textContent = 'Adding...';
+
+                    eel.add_api_key(serviceName, newKey, keyName_custom || null)(function (result) {
+                        addKeyButton.disabled = false;
+                        addKeyButton.textContent = 'Add Key';
+
+                        if (result.success) {
+                            addKeyInput.value = '';
+                            addKeyNameInput.value = '';
+                            // Reload to show the new key
+                            loadApiKeyService(serviceName);
+                        } else {
+                            // Show error message
+                            alert('Error adding API key: ' + result.message);
+                        }
+                    });
+                });
+
+                // Also allow Enter key to add
+                addKeyInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        addKeyButton.click();
+                    }
+                });
+
+                addKeyNameInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        addKeyButton.click();
+                    }
+                });
+
+                addKeyContainer.appendChild(addKeyInput);
+                addKeyContainer.appendChild(addKeyNameInput);
+                addKeyContainer.appendChild(addKeyButton);
+                serviceKeysList.appendChild(addKeyContainer);
+            }
+
+            // Create individual API key item
+            function createApiKeyItem(keyName, keyEntry, isSelected, isPreferred) {
+                const keyItem = document.createElement('div');
+                keyItem.className = 'api-key-item';
+                if (isSelected) {
+                    keyItem.classList.add('api-key-item-selected');
+                }
+                keyItem.dataset.keyId = keyEntry.id;
+
+                const keyHeader = document.createElement('div');
+                keyHeader.className = 'api-key-item-header';
+
+                const keyInfo = document.createElement('div');
+                keyInfo.className = 'api-key-info';
+
+                const keyNameDisplay = document.createElement('div');
+                keyNameDisplay.className = 'api-key-name-display';
+
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.className = 'api-key-name-input';
+                nameInput.value = keyEntry.name || 'Unnamed';
+                nameInput.dataset.keyId = keyEntry.id;
+
+                nameInput.addEventListener('blur', function () {
+                    const newName = nameInput.value.trim();
+                    if (newName && newName !== keyEntry.name) {
+                        eel.rename_api_key(keyName, keyEntry.id, newName)(function (result) {
+                            if (!result.success) {
+                                nameInput.value = keyEntry.name;
+                                alert('Error renaming: ' + result.message);
+                            } else {
+                                // Reload the service view to show updated name
+                                loadApiKeyService(keyName);
+                            }
+                        });
+                    }
+                });
+
+                // Also save on Enter key
+                nameInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); // Prevent any default behavior
+                        nameInput.blur(); // Trigger blur which will save the name
+                    }
+                });
+
+                keyNameDisplay.appendChild(nameInput);
+
+                const quotaDisplay = document.createElement('div');
+                quotaDisplay.className = 'api-key-quota';
+                let quotaStatus = keyEntry.quota_remaining || 'Unknown';
+                const quotaErrors = keyEntry.quota_errors || 0;
+
+                const quotaLabel = document.createElement('span');
+                quotaLabel.className = 'quota-label';
+                quotaLabel.textContent = 'Quota: ';
+
+                const quotaValue = document.createElement('span');
+                quotaValue.className = 'quota-value';
+                if (quotaStatus === 'Exhausted' || quotaStatus.includes('Exhausted')) {
+                    quotaValue.classList.add('quota-exhausted');
+                    // For Groq keys, show quota usage if available
+                    if (keyName === 'groq_api_key' && keyEntry.quota_usage) {
+                        quotaValue.textContent = `Exhausted (${keyEntry.quota_usage})`;
+                    } else {
+                        quotaValue.textContent = quotaStatus;
+                    }
+                } else {
+                    quotaValue.textContent = quotaStatus;
+                }
+                quotaValue.style.cursor = 'pointer';
+                quotaValue.title = 'Click to check availability';
+
+                // Make quota value clickable to check availability
+                quotaValue.addEventListener('click', function (e) {
+                    e.stopPropagation(); // Prevent triggering the menu collapse
+                    const originalText = quotaValue.textContent;
+                    quotaValue.textContent = 'Checking...';
+                    quotaValue.style.opacity = '0.7';
+                    quotaValue.style.pointerEvents = 'none';
+
+                    eel.check_api_key_availability(keyName, keyEntry.id)(function (result) {
+                        quotaValue.style.pointerEvents = 'auto';
+                        quotaValue.style.opacity = '1';
+
+                        if (result.success) {
+                            // Update styling based on result
+                            quotaValue.classList.remove('quota-exhausted', 'quota-available', 'quota-invalid');
+                            if (result.quota_remaining === 'Exhausted' || result.quota_remaining.includes('Exhausted')) {
+                                quotaValue.classList.add('quota-exhausted');
+                                // For Groq keys, show quota usage if available
+                                if (keyName === 'groq_api_key' && result.quota_usage) {
+                                    quotaValue.textContent = `Exhausted (${result.quota_usage})`;
+                                } else if (keyName === 'groq_api_key' && keyEntry.quota_usage) {
+                                    quotaValue.textContent = `Exhausted (${keyEntry.quota_usage})`;
+                                } else {
+                                    quotaValue.textContent = result.quota_remaining;
+                                }
+                            } else if (result.quota_remaining === 'Available' || result.quota_remaining.includes('Available')) {
+                                quotaValue.classList.add('quota-available');
+                                quotaValue.textContent = result.quota_remaining;
+                            } else if (result.quota_remaining === 'Invalid Key' || result.quota_remaining.includes('Invalid')) {
+                                quotaValue.classList.add('quota-invalid');
+                                quotaValue.textContent = result.quota_remaining;
+                            } else {
+                                quotaValue.textContent = result.quota_remaining;
+                            }
+
+                            // Update errors display
+                            if (errorsSpan) {
+                                if (result.quota_errors > 0) {
+                                    errorsSpan.textContent = `(${result.quota_errors} errors)`;
+                                } else {
+                                    errorsSpan.textContent = '';
+                                }
+                            }
+
+                            // Update the key entry in the current view without reloading
+                            keyEntry.quota_remaining = result.quota_remaining;
+                            keyEntry.quota_errors = result.quota_errors;
+                            keyEntry.status = result.status;
+                            // Update quota_usage if provided
+                            if (result.quota_usage) {
+                                keyEntry.quota_usage = result.quota_usage;
+                            }
+                        } else {
+                            quotaValue.textContent = originalText;
+                            alert('Error checking API key: ' + result.message);
+                        }
+                    });
+                });
+
+                const errorsSpan = document.createElement('span');
+                errorsSpan.className = 'quota-errors';
+                if (quotaErrors > 0) {
+                    errorsSpan.textContent = `(${quotaErrors} errors)`;
+                }
+
+                quotaDisplay.appendChild(quotaLabel);
+                quotaDisplay.appendChild(quotaValue);
+                quotaDisplay.appendChild(errorsSpan);
+
+                keyInfo.appendChild(keyNameDisplay);
+                keyInfo.appendChild(quotaDisplay);
+
+                const keyActions = document.createElement('div');
+                keyActions.className = 'api-key-actions';
+
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'api-key-delete-button';
+                deleteButton.textContent = 'Delete';
+                deleteButton.addEventListener('click', function () {
+                    if (confirm(`Are you sure you want to delete "${keyEntry.name}"?`)) {
+                        eel.delete_api_key(keyName, keyEntry.id)(function (result) {
+                            if (result.success) {
+                                // Reload the current view
+                                if (apiKeyServiceView.classList.contains('active')) {
+                                    loadApiKeyService(keyName);
+                                } else {
+                                    loadApiKeys();
+                                }
+                            } else {
+                                alert('Error deleting key: ' + result.message);
+                            }
+                        });
+                    }
+                });
+
+                keyActions.appendChild(deleteButton);
+
+                keyHeader.appendChild(keyInfo);
+                keyHeader.appendChild(keyActions);
+
+                const keyValue = document.createElement('div');
+                keyValue.className = 'api-key-value';
+                const maskedKey = keyEntry.key || '';
+                keyValue.textContent = maskedKey;
+
+                keyItem.appendChild(keyHeader);
+                keyItem.appendChild(keyValue);
+
+                return keyItem;
+            }
+
+            // Load Kasa devices function
+            function loadKasaDevices() {
+                const kasaDevicesList = document.getElementById('kasa-devices-list');
+                if (!kasaDevicesList) {
+                    console.error('Kasa devices list element not found');
+                    return;
+                }
+                kasaDevicesList.innerHTML = '<div class="no-memories">Loading devices...</div>';
+
+                try {
+                    eel.get_kasa_devices()(function (devices) {
+                        try {
+                            if (devices && Array.isArray(devices)) {
+                                displayKasaDevices(devices);
+                            } else {
+                                console.error('Invalid Kasa devices response:', devices);
+                                kasaDevicesList.innerHTML = '<div class="no-memories">Error: Invalid response from server</div>';
+                            }
+                        } catch (e) {
+                            console.error('Error displaying Kasa devices:', e);
+                            kasaDevicesList.innerHTML = '<div class="no-memories">Error loading devices: ' + e.message + '</div>';
+                        }
+                    });
+                } catch (e) {
+                    console.error('Error calling get_kasa_devices:', e);
+                    kasaDevicesList.innerHTML = '<div class="no-memories">Error: Could not load devices</div>';
+                }
+            }
+
+            // Display Kasa devices function
+            function displayKasaDevices(devices) {
+                const kasaDevicesList = document.getElementById('kasa-devices-list');
+                kasaDevicesList.innerHTML = '';
+
+                if (!devices || devices.length === 0) {
+                    kasaDevicesList.innerHTML = '<div class="no-memories">No devices configured. Click "Discover Devices" to find Kasa devices on your network.</div>';
+                }
+
+                // Add existing devices
+                devices.forEach(function (device) {
+                    const deviceItem = createKasaDeviceItem(device);
+                    kasaDevicesList.appendChild(deviceItem);
+                });
+
+                // Add "Discover Devices" button
+                const discoverContainer = document.createElement('div');
+                discoverContainer.className = 'api-key-add-container';
+                discoverContainer.style.marginTop = '20px';
+
+                const discoverButton = document.createElement('button');
+                discoverButton.className = 'api-key-add-button';
+                discoverButton.textContent = 'Discover Devices';
+                discoverButton.style.width = '100%';
+                discoverButton.style.marginBottom = '10px';
+                discoverButton.addEventListener('click', function () {
+                    discoverButton.disabled = true;
+                    discoverButton.textContent = 'Discovering... (this may take 30-60 seconds)';
+
+                    eel.discover_kasa_devices()(function (discoveredDevices) {
+                        discoverButton.disabled = false;
+                        discoverButton.textContent = 'Discover Devices';
+
+                        if (discoveredDevices && Array.isArray(discoveredDevices) && discoveredDevices.length > 0) {
+                            displayDiscoveredDevices(discoveredDevices);
+                        } else {
+                            // Show manual entry option
+                            const manualEntry = confirm('No devices found automatically.\n\nThe system tried:\n- UDP broadcast discovery\n- Network IP scanning\n\nThis could be due to:\n- Firewall blocking network discovery\n- Devices on a different subnet\n- Devices powered off\n\nWould you like to manually add a device by IP or MAC address?');
+                            if (manualEntry) {
+                                showManualDeviceEntry();
+                            }
+                        }
+                    });
+                });
+
+                discoverContainer.appendChild(discoverButton);
+
+                kasaDevicesList.appendChild(discoverContainer);
+            }
+
+            // Show manual device entry dialog
+            function showManualDeviceEntry() {
+                const entryMethod = confirm('How would you like to add the device?\n\nOK = By MAC Address (Recommended - more reliable)\nCancel = By IP Address');
+
+                let ip = null;
+                let mac = null;
+
+                if (entryMethod) {
+                    // MAC address entry
+                    const macInput = prompt('Enter the MAC address of your Kasa device:\n\nFormat: XX:XX:XX:XX:XX:XX or XXXXXXXXXXXX\n\n(You can find this in your router settings, Kasa app, or on the device label)');
+                    if (!macInput) return;
+
+                    // Normalize MAC address
+                    let macNormalized = macInput.toUpperCase().replace(/[:\-]/g, '');
+                    if (macNormalized.length === 12) {
+                        mac = macNormalized.match(/.{2}/g).join(':');
+                    } else if (macNormalized.length === 17 && macInput.includes(':')) {
+                        mac = macInput.toUpperCase();
+                    } else {
+                        alert('Invalid MAC address format. Please use XX:XX:XX:XX:XX:XX format.');
+                        return;
+                    }
+                } else {
+                    // IP address entry
+                    ip = prompt('Enter the IP address of your Kasa device:\n\n(You can find this in your router settings or Kasa app)');
+                    if (!ip) return;
+
+                    // Basic IP validation
+                    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+                    if (!ipRegex.test(ip)) {
+                        alert('Invalid IP address format. Please enter a valid IP (e.g., 192.168.1.100)');
+                        return;
+                    }
+                }
+
+                const name = prompt('Enter a name for this device:', 'My Kasa Device');
+                if (!name) return;
+
+                const deviceType = confirm('Is this a smart bulb? (Click OK for bulb, Cancel for plug)') ? 'bulb' : 'plug';
+
+                // Test the connection first
+                eel.test_kasa_device_connection(ip || null, mac || null)(function (testResult) {
+                    if (testResult.success) {
+                        // Device is reachable, save it with both IP and MAC if available
+                        const saveIp = testResult.ip || ip;
+                        const saveMac = testResult.mac || mac;
+
+                        eel.save_kasa_device(name, saveIp, saveMac, deviceType)(function (saveResult) {
+                            if (saveResult.success) {
+                                const macInfo = saveMac ? `\nMAC: ${saveMac}` : '';
+                                alert(`Device "${name}" added successfully!\n\nDevice Name: ${testResult.name}\nType: ${testResult.type}\nIP: ${saveIp}${macInfo}\nStatus: ${testResult.is_on ? 'ON' : 'OFF'}`);
+                                loadKasaDevices();
+                            } else {
+                                alert('Error saving device: ' + (saveResult.message || 'Unknown error'));
+                            }
+                        });
+                    } else {
+                        // Still try to save it - user might want to add it anyway
+                        const stillAdd = confirm(`Could not connect to device.\n\nError: ${testResult.message}\n\nPossible reasons:\n- Device is powered off\n- Device is on a different network\n- Firewall blocking connection\n- Incorrect IP/MAC address\n\nWould you still like to add it? (You can test it later using the control buttons)`);
+                        if (stillAdd) {
+                            eel.save_kasa_device(name, ip, mac, deviceType)(function (saveResult) {
+                                if (saveResult.success) {
+                                    alert(`Device "${name}" added. You can test the connection using the control buttons.`);
+                                    loadKasaDevices();
+                                } else {
+                                    alert('Error saving device: ' + (saveResult.message || 'Unknown error'));
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            // Display discovered devices
+            function displayDiscoveredDevices(discoveredDevices) {
+                const kasaDevicesList = document.getElementById('kasa-devices-list');
+
+                // Create a modal-like overlay for discovered devices
+                const overlay = document.createElement('div');
+                overlay.style.position = 'fixed';
+                overlay.style.top = '0';
+                overlay.style.left = '0';
+                overlay.style.width = '100%';
+                overlay.style.height = '100%';
+                overlay.style.background = 'rgba(0, 0, 0, 0.7)';
+                overlay.style.zIndex = '10000';
+                overlay.style.display = 'flex';
+                overlay.style.alignItems = 'center';
+                overlay.style.justifyContent = 'center';
+
+                const modal = document.createElement('div');
+                modal.style.background = 'linear-gradient(135deg, rgba(10, 17, 35, 0.98) 0%, rgba(8, 20, 45, 0.96) 100%)';
+                modal.style.border = '1px solid rgba(0, 149, 255, 0.5)';
+                modal.style.borderRadius = '20px';
+                modal.style.padding = '24px';
+                modal.style.maxWidth = '500px';
+                modal.style.width = '90%';
+                modal.style.maxHeight = '80vh';
+                modal.style.overflowY = 'auto';
+
+                const title = document.createElement('h3');
+                title.textContent = 'Discovered Devices';
+                title.style.color = '#fff';
+                title.style.marginTop = '0';
+                modal.appendChild(title);
+
+                discoveredDevices.forEach(function (device) {
+                    const deviceDiv = document.createElement('div');
+                    deviceDiv.style.padding = '12px';
+                    deviceDiv.style.marginBottom = '10px';
+                    deviceDiv.style.background = 'rgba(0, 149, 255, 0.1)';
+                    deviceDiv.style.borderRadius = '8px';
+                    deviceDiv.style.border = '1px solid rgba(0, 149, 255, 0.3)';
+
+                    const deviceName = document.createElement('div');
+                    deviceName.textContent = device.name || 'Unnamed Device';
+                    deviceName.style.color = '#fff';
+                    deviceName.style.fontWeight = '600';
+                    deviceName.style.marginBottom = '5px';
+                    deviceDiv.appendChild(deviceName);
+
+                    const deviceInfo = document.createElement('div');
+                    let infoText = `${device.type} • ${device.ip} • ${device.is_on ? 'ON' : 'OFF'}`;
+                    if (device.mac) {
+                        infoText += ` • MAC: ${device.mac}`;
+                    }
+                    deviceInfo.textContent = infoText;
+                    deviceInfo.style.color = 'rgba(255, 255, 255, 0.7)';
+                    deviceInfo.style.fontSize = '0.9em';
+                    deviceDiv.appendChild(deviceInfo);
+
+                    const saveButton = document.createElement('button');
+                    saveButton.textContent = 'Save Device';
+                    saveButton.className = 'api-key-add-button';
+                    saveButton.style.marginTop = '8px';
+                    saveButton.style.width = '100%';
+                    saveButton.addEventListener('click', function () {
+                        const name = prompt('Enter a name for this device:', device.name || 'My Device');
+                        if (name) {
+                            eel.save_kasa_device(name, device.ip, device.mac || null, device.type)(function (result) {
+                                if (result.success) {
+                                    overlay.remove();
+                                    loadKasaDevices();
+                                } else {
+                                    alert('Error saving device: ' + (result.message || 'Unknown error'));
+                                }
+                            });
+                        }
+                    });
+                    deviceDiv.appendChild(saveButton);
+
+
+                    modal.appendChild(deviceDiv);
+                });
+
+                const closeButton = document.createElement('button');
+                closeButton.textContent = 'Close';
+                closeButton.className = 'api-key-add-button';
+                closeButton.style.width = '100%';
+                closeButton.style.marginTop = '10px';
+                closeButton.addEventListener('click', function () {
+                    overlay.remove();
+                });
+                modal.appendChild(closeButton);
+
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+
+                overlay.addEventListener('click', function (e) {
+                    if (e.target === overlay) {
+                        overlay.remove();
+                    }
+                });
+            }
+
+            // Create individual Kasa device item
+            function createKasaDeviceItem(device) {
+                const deviceItem = document.createElement('div');
+                deviceItem.className = 'api-key-item';
+                deviceItem.dataset.deviceIp = device.ip;
+
+                const deviceHeader = document.createElement('div');
+                deviceHeader.className = 'api-key-item-header';
+
+                const deviceInfo = document.createElement('div');
+                deviceInfo.className = 'api-key-info';
+
+                const deviceNameDisplay = document.createElement('div');
+                deviceNameDisplay.className = 'api-key-name-display';
+                deviceNameDisplay.textContent = device.name || 'Unnamed Device';
+                deviceNameDisplay.style.color = '#fff';
+                deviceNameDisplay.style.fontWeight = '600';
+                deviceNameDisplay.style.marginBottom = '5px';
+
+                const deviceIpDisplay = document.createElement('div');
+                deviceIpDisplay.className = 'api-key-quota';
+                let deviceInfoText = `${device.type}`;
+                if (device.ip) {
+                    deviceInfoText += ` • IP: ${device.ip}`;
+                }
+                if (device.mac) {
+                    deviceInfoText += ` • MAC: ${device.mac}`;
+                }
+                deviceIpDisplay.textContent = deviceInfoText;
+                deviceIpDisplay.style.color = 'rgba(255, 255, 255, 0.7)';
+                deviceIpDisplay.style.fontSize = '0.9em';
+
+                deviceInfo.appendChild(deviceNameDisplay);
+                deviceInfo.appendChild(deviceIpDisplay);
+
+                const deviceActions = document.createElement('div');
+                deviceActions.className = 'api-key-actions';
+                deviceActions.style.display = 'flex';
+                deviceActions.style.gap = '8px';
+
+                // Control buttons
+                const onButton = document.createElement('button');
+                onButton.className = 'api-key-add-button';
+                onButton.textContent = 'ON';
+                onButton.style.padding = '6px 12px';
+                onButton.style.fontSize = '0.9em';
+                onButton.addEventListener('click', function () {
+                    // Disable button temporarily to show action
+                    onButton.disabled = true;
+                    onButton.textContent = '...';
+                    eel.control_kasa_device(device.ip || null, device.mac || null, 'on')(function (result) {
+                        onButton.disabled = false;
+                        onButton.textContent = 'ON';
+                        if (result.success) {
+                            // Silently refresh device list
+                            loadKasaDevices();
+                        } else {
+                            // Only show error if it's a real error (not just communication error)
+                            if (!result.message.includes('command sent successfully')) {
+                                console.error('Kasa control error:', result.message);
+                            }
+                        }
+                    });
+                });
+
+                const offButton = document.createElement('button');
+                offButton.className = 'api-key-add-button';
+                offButton.textContent = 'OFF';
+                offButton.style.padding = '6px 12px';
+                offButton.style.fontSize = '0.9em';
+                offButton.addEventListener('click', function () {
+                    // Disable button temporarily to show action
+                    offButton.disabled = true;
+                    offButton.textContent = '...';
+                    eel.control_kasa_device(device.ip || null, device.mac || null, 'off')(function (result) {
+                        offButton.disabled = false;
+                        offButton.textContent = 'OFF';
+                        if (result.success) {
+                            // Silently refresh device list
+                            loadKasaDevices();
+                        } else {
+                            // Only show error if it's a real error (not just communication error)
+                            if (!result.message.includes('command sent successfully')) {
+                                console.error('Kasa control error:', result.message);
+                            }
+                        }
+                    });
+                });
+
+                const toggleButton = document.createElement('button');
+                toggleButton.className = 'api-key-add-button';
+                toggleButton.textContent = 'Toggle';
+                toggleButton.style.padding = '6px 12px';
+                toggleButton.style.fontSize = '0.9em';
+                toggleButton.addEventListener('click', function () {
+                    // Disable button temporarily to show action
+                    toggleButton.disabled = true;
+                    toggleButton.textContent = '...';
+                    eel.control_kasa_device(device.ip || null, device.mac || null, 'toggle')(function (result) {
+                        toggleButton.disabled = false;
+                        toggleButton.textContent = 'Toggle';
+                        if (result.success) {
+                            // Silently refresh device list
+                            loadKasaDevices();
+                        } else {
+                            // Only show error if it's a real error (not just communication error)
+                            if (!result.message.includes('command sent successfully')) {
+                                console.error('Kasa control error:', result.message);
+                            }
+                        }
+                    });
+                });
+
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'api-key-delete-button';
+                deleteButton.textContent = 'Delete';
+                deleteButton.addEventListener('click', function () {
+                    if (confirm(`Are you sure you want to remove "${device.name}"?`)) {
+                        eel.remove_kasa_device(device.ip)(function (result) {
+                            if (result.success) {
+                                loadKasaDevices();
+                            } else {
+                                alert('Error removing device: ' + (result.message || 'Unknown error'));
+                            }
+                        });
+                    }
+                });
+
+                deviceActions.appendChild(onButton);
+                deviceActions.appendChild(offButton);
+                deviceActions.appendChild(deleteButton);
+
+                deviceHeader.appendChild(deviceInfo);
+                deviceHeader.appendChild(deviceActions);
+
+                deviceItem.appendChild(deviceHeader);
+
+                return deviceItem;
+            }
+
+            // Close on Escape key
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && settingsPanel.classList.contains('active')) {
+                    if (memoryView.classList.contains('active') || apiKeysView.classList.contains('active') || kasaView.classList.contains('active') || alarmsView.classList.contains('active') || workspacesView.classList.contains('active')) {
+                        showMainView(); // Go back to main view if in sub-view
+                    } else {
+                        closeSettings(); // Close settings if in main view
+                    }
+                }
+            });
+
+            // Handle assistant name change
+            if (assistantNameInput) {
+                assistantNameInput.addEventListener('blur', function () {
+                    const newName = assistantNameInput.value.trim();
+                    if (newName && newName !== assistantNameInput.defaultValue) {
+                        eel.set_assistant_name(newName)(function (result) {
+                            if (result.success) {
+                                // Update the display
+                                document.getElementById('assistant-name-display').textContent = result.name;
+                                document.getElementById('text-input').placeholder = `Message ${result.name}...`;
+                                assistantNameInput.defaultValue = result.name;
+                            } else {
+                                console.error('Error setting assistant name:', result.message);
+                                // Restore previous value
+                                eel.get_assistant_name()(function (name) {
+                                    assistantNameInput.value = name;
+                                });
+                            }
+                        });
+                    }
+                });
+
+                assistantNameInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        assistantNameInput.blur();
+                    }
+                });
+            }
+
+            // Handle DND toggle
+            dndToggle.addEventListener('change', function () {
+                const enabled = dndToggle.checked;
+                eel.set_do_not_disturb(enabled)(function (result) {
+                    console.log('Do Not Disturb set to:', result);
+                });
+            });
+
+            // Store all memories for filtering
+            let allMemories = [];
+
+            // Load memories function
+            function loadMemories() {
+                const memoriesList = document.getElementById('memories-list');
+                memoriesList.innerHTML = '<div class="no-memories">Loading memories...</div>';
+
+                eel.get_long_term_memories()(function (memoriesJson) {
+                    try {
+                        const memories = JSON.parse(memoriesJson);
+                        allMemories = memories; // Store all memories
+
+                        // Check if there's a search query and filter accordingly
+                        const searchInput = document.getElementById('memory-search-input');
+                        if (searchInput && searchInput.value) {
+                            const filteredMemories = filterMemories(searchInput.value);
+                            displayMemories(filteredMemories);
+                        } else {
+                            displayMemories(memories);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing memories:', e);
+                        memoriesList.innerHTML = '<div class="no-memories">Error loading memories</div>';
+                    }
+                });
+            }
+
+            // Filter memories based on search query
+            function filterMemories(query) {
+                if (!query || query.trim() === '') {
+                    return allMemories;
+                }
+
+                const searchTerm = query.toLowerCase().trim();
+                return allMemories.filter(function (memory) {
+                    // Search in memory content
+                    const contentMatch = (memory.memory_content || '').toLowerCase().includes(searchTerm);
+
+                    // Search in memory type
+                    const typeMatch = (memory.memory_type || '').toLowerCase().includes(searchTerm);
+
+                    // Search in tags
+                    const tagsMatch = memory.tags && memory.tags.some(function (tag) {
+                        return tag.toLowerCase().includes(searchTerm);
+                    });
+
+                    return contentMatch || typeMatch || tagsMatch;
+                });
+            }
+
+            // Display memories function
+            function displayMemories(memories) {
+                const memoriesList = document.getElementById('memories-list');
+
+                if (!memories || memories.length === 0) {
+                    memoriesList.innerHTML = '<div class="no-memories">No memories found</div>';
+                    return;
+                }
+
+                memoriesList.innerHTML = '';
+
+                memories.forEach(function (memory) {
+                    const memoryItem = document.createElement('div');
+                    memoryItem.className = 'memory-item';
+                    memoryItem.setAttribute('data-memory-id', memory.id);
+
+                    const header = document.createElement('div');
+                    header.className = 'memory-item-header';
+
+                    const content = document.createElement('div');
+                    content.className = 'memory-content';
+                    content.textContent = memory.memory_content || 'No content';
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'memory-delete-btn';
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.addEventListener('click', function () {
+                        if (confirm('Are you sure you want to delete this memory?')) {
+                            deleteMemory(memory.id);
+                        }
+                    });
+
+                    header.appendChild(content);
+                    header.appendChild(deleteBtn);
+
+                    const meta = document.createElement('div');
+                    meta.className = 'memory-meta';
+
+                    const type = document.createElement('span');
+                    type.className = 'memory-type';
+                    type.textContent = memory.memory_type || 'other';
+
+                    meta.appendChild(type);
+
+                    if (memory.tags && memory.tags.length > 0) {
+                        const tags = document.createElement('div');
+                        tags.className = 'memory-tags';
+                        memory.tags.forEach(function (tag) {
+                            const tagSpan = document.createElement('span');
+                            tagSpan.className = 'memory-tag';
+                            tagSpan.textContent = tag;
+                            tags.appendChild(tagSpan);
+                        });
+                        meta.appendChild(tags);
+                    }
+
+                    if (memory.importance !== undefined) {
+                        const importance = document.createElement('span');
+                        importance.textContent = `Importance: ${memory.importance}`;
+                        meta.appendChild(importance);
+                    }
+
+                    memoryItem.appendChild(header);
+                    memoryItem.appendChild(meta);
+                    memoriesList.appendChild(memoryItem);
+                });
+            }
+
+            // Delete memory function
+            function deleteMemory(memoryId) {
+                eel.delete_long_term_memory(memoryId)(function (resultJson) {
+                    try {
+                        const result = JSON.parse(resultJson);
+                        if (result.success) {
+                            // Remove from allMemories array immediately
+                            allMemories = allMemories.filter(function (m) {
+                                return m.id !== memoryId;
+                            });
+
+                            // Immediately remove from UI for instant feedback
+                            const memoryItem = document.querySelector(`[data-memory-id="${memoryId}"]`);
+                            if (memoryItem) {
+                                memoryItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                                memoryItem.style.opacity = '0';
+                                memoryItem.style.transform = 'translateX(-20px)';
+                                setTimeout(function () {
+                                    memoryItem.remove();
+                                    // Reload memories to ensure sync with backend
+                                    loadMemories();
+                                }, 300);
+                            } else {
+                                // Fallback: reload if element not found
+                                loadMemories();
+                            }
+                        } else {
+                            alert('Error deleting memory: ' + result.message);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing delete result:', e);
+                        alert('Error deleting memory');
+                    }
+                });
+            }
+
+            // Load alarms function
+            function loadAlarms() {
+                const alarmsList = document.getElementById('alarms-list');
+                if (!alarmsList) {
+                    console.error('Alarms list element not found');
+                    return;
+                }
+                alarmsList.innerHTML = '<div class="no-memories">Loading alarms...</div>';
+
+                try {
+                    eel.get_alarms()(function (alarmsJson) {
+                        try {
+                            const alarms = JSON.parse(alarmsJson);
+                            displayAlarms(alarms);
+                        } catch (e) {
+                            console.error('Error parsing alarms:', e);
+                            alarmsList.innerHTML = '<div class="no-memories">Error loading alarms</div>';
+                        }
+                    });
+                } catch (e) {
+                    console.error('Error calling get_alarms:', e);
+                    alarmsList.innerHTML = '<div class="no-memories">Error: Could not load alarms</div>';
+                }
+            }
+
+            // Display alarms function
+            function displayAlarms(alarms) {
+                const alarmsList = document.getElementById('alarms-list');
+                alarmsList.innerHTML = '';
+
+                if (!alarms || alarms.length === 0) {
+                    alarmsList.innerHTML = '<div class="no-memories">No alarms or reminders set. Set alarms by saying "Set an alarm for 9 AM" or reminders by saying "Remind me to take medication at 2 PM".</div>';
+                    return;
+                }
+
+                alarms.forEach(function (alarm) {
+                    const alarmItem = document.createElement('div');
+                    alarmItem.className = 'api-key-item';
+                    alarmItem.dataset.alarmId = alarm.id;
+
+                    const alarmHeader = document.createElement('div');
+                    alarmHeader.className = 'api-key-item-header';
+
+                    const alarmInfo = document.createElement('div');
+                    alarmInfo.className = 'api-key-info';
+
+                    const alarmNameDisplay = document.createElement('div');
+                    alarmNameDisplay.className = 'api-key-name-display';
+
+                    // Show type indicator and label
+                    const itemType = alarm.type || 'alarm';
+                    const typeLabel = itemType === 'reminder' ? 'Reminder' : 'Alarm';
+                    const displayLabel = alarm.label || (itemType === 'reminder' ? 'Reminder' : 'Alarm');
+                    alarmNameDisplay.innerHTML = `<span style="color: rgba(255, 255, 255, 0.6); font-size: 0.8em; margin-right: 8px;">[${typeLabel}]</span>${displayLabel}`;
+                    alarmNameDisplay.style.color = '#fff';
+                    alarmNameDisplay.style.fontWeight = '600';
+                    alarmNameDisplay.style.marginBottom = '5px';
+
+                    const alarmTimeDisplay = document.createElement('div');
+                    alarmTimeDisplay.className = 'api-key-quota';
+
+                    // Format time for display
+                    const timeStr = alarm.time || '';
+                    let displayTime = timeStr;
+                    try {
+                        // Convert 24-hour to 12-hour format for display
+                        const [hours, minutes] = timeStr.split(':');
+                        const hour = parseInt(hours);
+                        const minute = parseInt(minutes);
+                        if (!isNaN(hour) && !isNaN(minute)) {
+                            const period = hour >= 12 ? 'PM' : 'AM';
+                            const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+                            displayTime = `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+                        }
+                    } catch (e) {
+                        // Keep original format if parsing fails
+                    }
+
+                    // Build time info with recurring information
+                    const targetDate = alarm.target_date;
+                    const daysOfWeek = alarm.days_of_week;
+                    const repeatDaily = alarm.repeat_daily;
+
+                    // Format date if provided
+                    let dateDisplay = '';
+                    if (targetDate !== null && targetDate !== undefined && targetDate !== '') {
+                        try {
+                            // Handle ISO date format (YYYY-MM-DD) - JavaScript Date needs to parse this correctly
+                            let dateObj;
+                            if (typeof targetDate === 'string' && targetDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                                // ISO date format (YYYY-MM-DD) - add time to make it parseable
+                                dateObj = new Date(targetDate + 'T00:00:00');
+                            } else {
+                                dateObj = new Date(targetDate);
+                            }
+
+                            if (!isNaN(dateObj.getTime())) {
+                                const dateStr = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                                dateDisplay = ` • ${dateStr}`;
+                            }
+                        } catch (e) {
+                            // If parsing fails, skip date display
+                        }
+                    }
+
+                    let timeInfo = `Time: ${displayTime}${dateDisplay}`;
+
+                    // Build specification details
+                    const specs = [];
+
+                    // Show specific recurring days if provided
+                    // Check if daysOfWeek exists, is an array, and has items
+                    if (daysOfWeek !== null && daysOfWeek !== undefined && Array.isArray(daysOfWeek) && daysOfWeek.length > 0) {
+                        // Format day names nicely (e.g., "Mon, Wed, Fri" instead of "Monday, Wednesday, Friday")
+                        const dayAbbrevs = {
+                            'Monday': 'Mon', 'Tuesday': 'Tue', 'Wednesday': 'Wed',
+                            'Thursday': 'Thu', 'Friday': 'Fri', 'Saturday': 'Sat', 'Sunday': 'Sun'
+                        };
+                        const formattedDays = daysOfWeek
+                            .filter(day => day && day.trim && day.trim()) // Filter out null/empty values
+                            .map(day => dayAbbrevs[day] || day)
+                            .join(', ');
+                        if (formattedDays) {
+                            specs.push(`Recurring: ${formattedDays}`);
+                        }
+                    }
+                    // Show daily recurring (only if no specific days are set and repeat_daily is true)
+                    else if (repeatDaily === true && (daysOfWeek === null || daysOfWeek === undefined || !Array.isArray(daysOfWeek) || daysOfWeek.length === 0)) {
+                        specs.push('Recurring: Daily');
+                    }
+
+                    // Display specifications
+                    if (specs.length > 0) {
+                        // Show all specifications in a styled format
+                        const specsText = specs.join(' • ');
+                        timeInfo += ` <span style="color: rgba(100, 200, 255, 0.9); font-weight: 600;">[${specsText}]</span>`;
+                    } else {
+                        // Only show "One-time" if there are no special specifications
+                        timeInfo += ` <span style="color: rgba(255, 255, 255, 0.4); font-size: 0.85em;">(One-time)</span>`;
+                    }
+
+                    alarmTimeDisplay.innerHTML = timeInfo;
+                    alarmTimeDisplay.style.color = 'rgba(255, 255, 255, 0.7)';
+                    alarmTimeDisplay.style.fontSize = '0.9em';
+
+                    alarmInfo.appendChild(alarmNameDisplay);
+                    alarmInfo.appendChild(alarmTimeDisplay);
+
+                    const alarmActions = document.createElement('div');
+                    alarmActions.className = 'api-key-actions';
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'api-key-delete-button';
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.addEventListener('click', function () {
+                        const itemType = alarm.type || 'alarm';
+                        const typeName = itemType === 'reminder' ? 'reminder' : 'alarm';
+                        const itemLabel = alarm.label || (itemType === 'reminder' ? 'Reminder' : 'Alarm');
+                        if (confirm(`Are you sure you want to delete the ${typeName} "${itemLabel}"?`)) {
+                            eel.delete_alarm(alarm.id)(function (result) {
+                                if (result.success) {
+                                    // Immediately remove from UI
+                                    const alarmItem = document.querySelector(`[data-alarm-id="${alarm.id}"]`);
+                                    if (alarmItem) {
+                                        alarmItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                                        alarmItem.style.opacity = '0';
+                                        alarmItem.style.transform = 'translateX(-20px)';
+                                        setTimeout(function () {
+                                            alarmItem.remove();
+                                            // Reload alarms to ensure sync
+                                            loadAlarms();
+                                        }, 300);
+                                    } else {
+                                        loadAlarms();
+                                    }
+                                } else {
+                                    alert('Error deleting alarm: ' + (result.message || 'Unknown error'));
+                                }
+                            });
+                        }
+                    });
+
+                    alarmActions.appendChild(deleteButton);
+
+                    alarmHeader.appendChild(alarmInfo);
+                    alarmHeader.appendChild(alarmActions);
+
+                    alarmItem.appendChild(alarmHeader);
+                    alarmsList.appendChild(alarmItem);
+                });
+            }
+
+            // Load workspaces function
+            function loadWorkspaces() {
+                const workspacesList = document.getElementById('workspaces-list');
+                if (!workspacesList) {
+                    console.error('Workspaces list element not found');
+                    return;
+                }
+                workspacesList.innerHTML = '<div class="no-memories">Loading workspaces...</div>';
+
+                try {
+                    eel.get_workspaces()(function (workspacesJson) {
+                        try {
+                            const workspaces = JSON.parse(workspacesJson);
+                            displayWorkspaces(workspaces);
+                        } catch (e) {
+                            console.error('Error parsing workspaces:', e);
+                            workspacesList.innerHTML = '<div class="no-memories">Error loading workspaces</div>';
+                        }
+                    });
+                } catch (e) {
+                    console.error('Error calling get_workspaces:', e);
+                    workspacesList.innerHTML = '<div class="no-memories">Error: Could not load workspaces</div>';
+                }
+            }
+
+            // Display workspaces function
+            function displayWorkspaces(workspaces) {
+                const workspacesList = document.getElementById('workspaces-list');
+                workspacesList.innerHTML = '';
+
+                if (!workspaces || workspaces.length === 0) {
+                    workspacesList.innerHTML = '<div class="no-memories">No workspaces saved yet. Save your current workspace by saying "Save my workspace as [name]" or use the save button below.</div>';
+                }
+
+                // Add "Save Current Workspace" button at the top
+                const saveContainer = document.createElement('div');
+                saveContainer.className = 'api-key-add-container';
+                saveContainer.style.marginBottom = '20px';
+
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.className = 'settings-input';
+                nameInput.placeholder = 'Enter workspace name (required)...';
+                nameInput.required = true;
+                nameInput.style.marginRight = '8px';
+                nameInput.style.flex = '1';
+
+                const saveButton = document.createElement('button');
+                saveButton.className = 'api-key-add-button';
+                saveButton.textContent = 'Save Current Workspace';
+                saveButton.addEventListener('click', function () {
+                    const name = nameInput.value.trim();
+                    if (!name) {
+                        alert('Please enter a workspace name');
+                        return;
+                    }
+
+                    saveButton.disabled = true;
+                    saveButton.textContent = 'Saving...';
+
+                    eel.save_current_workspace(name)(function (result) {
+                        saveButton.disabled = false;
+                        saveButton.textContent = 'Save Current Workspace';
+
+                        if (result.success) {
+                            nameInput.value = '';
+                            loadWorkspaces(); // Reload to show the new workspace
+                            alert(`Workspace "${name}" saved successfully!`);
+                        } else {
+                            alert('Error saving workspace: ' + (result.message || 'Unknown error'));
+                        }
+                    });
+                });
+
+                nameInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        saveButton.click();
+                    }
+                });
+
+                saveContainer.appendChild(nameInput);
+                saveContainer.appendChild(saveButton);
+                workspacesList.appendChild(saveContainer);
+
+                // Add existing workspaces
+                workspaces.forEach(function (workspace) {
+                    const workspaceItem = document.createElement('div');
+                    workspaceItem.className = 'api-key-item';
+                    workspaceItem.dataset.workspaceId = workspace.id;
+
+                    const workspaceHeader = document.createElement('div');
+                    workspaceHeader.className = 'api-key-item-header';
+
+                    const workspaceInfo = document.createElement('div');
+                    workspaceInfo.className = 'api-key-info';
+
+                    const workspaceNameDisplay = document.createElement('div');
+                    workspaceNameDisplay.className = 'api-key-name-display';
+                    workspaceNameDisplay.textContent = workspace.name || 'Unnamed Workspace';
+                    workspaceNameDisplay.style.color = '#fff';
+                    workspaceNameDisplay.style.fontWeight = '600';
+                    workspaceNameDisplay.style.marginBottom = '5px';
+
+                    const workspaceMetaDisplay = document.createElement('div');
+                    workspaceMetaDisplay.className = 'api-key-quota';
+                    let metaText = `${workspace.widget_count || 0} widget${(workspace.widget_count || 0) !== 1 ? 's' : ''}`;
+                    if (workspace.updated_at) {
+                        try {
+                            const updatedDate = new Date(workspace.updated_at);
+                            const dateStr = updatedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                            metaText += ` • Updated: ${dateStr}`;
+                        } catch (e) {
+                            // Skip date if parsing fails
+                        }
+                    }
+                    workspaceMetaDisplay.textContent = metaText;
+                    workspaceMetaDisplay.style.color = 'rgba(255, 255, 255, 0.7)';
+                    workspaceMetaDisplay.style.fontSize = '0.9em';
+
+                    workspaceInfo.appendChild(workspaceNameDisplay);
+                    workspaceInfo.appendChild(workspaceMetaDisplay);
+
+                    const workspaceActions = document.createElement('div');
+                    workspaceActions.className = 'api-key-actions';
+                    workspaceActions.style.display = 'flex';
+                    workspaceActions.style.gap = '8px';
+
+                    const loadButton = document.createElement('button');
+                    loadButton.className = 'api-key-add-button';
+                    loadButton.textContent = 'Load';
+                    loadButton.style.padding = '6px 12px';
+                    loadButton.style.fontSize = '0.9em';
+                    loadButton.addEventListener('click', function () {
+                        if (confirm(`Load workspace "${workspace.name}"? This will replace your current workspace.`)) {
+                            loadButton.disabled = true;
+                            loadButton.textContent = 'Loading...';
+                            eel.restore_workspace(workspace.id)(function (result) {
+                                loadButton.disabled = false;
+                                loadButton.textContent = 'Load';
+                                if (result.success) {
+                                    alert(`Workspace "${workspace.name}" loaded successfully!`);
+                                    closeSettings(); // Close settings after loading
+                                } else {
+                                    alert('Error loading workspace: ' + (result.message || 'Unknown error'));
+                                }
+                            });
+                        }
+                    });
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'api-key-delete-button';
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.addEventListener('click', function () {
+                        if (confirm(`Are you sure you want to delete workspace "${workspace.name}"?`)) {
+                            eel.delete_workspace(workspace.id)(function (result) {
+                                if (result.success) {
+                                    // Immediately remove from UI
+                                    const workspaceItem = document.querySelector(`[data-workspace-id="${workspace.id}"]`);
+                                    if (workspaceItem) {
+                                        workspaceItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                                        workspaceItem.style.opacity = '0';
+                                        workspaceItem.style.transform = 'translateX(-20px)';
+                                        setTimeout(function () {
+                                            workspaceItem.remove();
+                                            loadWorkspaces(); // Reload to ensure sync
+                                        }, 300);
+                                    } else {
+                                        loadWorkspaces();
+                                    }
+                                } else {
+                                    alert('Error deleting workspace: ' + (result.message || 'Unknown error'));
+                                }
+                            });
+                        }
+                    });
+
+                    workspaceActions.appendChild(loadButton);
+                    workspaceActions.appendChild(deleteButton);
+
+                    workspaceHeader.appendChild(workspaceInfo);
+                    workspaceHeader.appendChild(workspaceActions);
+
+                    workspaceItem.appendChild(workspaceHeader);
+                    workspacesList.appendChild(workspaceItem);
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
