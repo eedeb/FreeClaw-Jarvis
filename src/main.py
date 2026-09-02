@@ -28,12 +28,14 @@ import asyncio
 import os
 import re
 import secrets
+import subprocess
 import sys
 import threading
 import time
 import webbrowser
 
 import eel
+import eel.chrome as eel_chrome
 
 # Two console hazards on Windows, both fatal and both avoidable.
 #
@@ -73,7 +75,7 @@ import control_server
 import freeclaw_client
 import vocalize
 from logging_setup import get_logger
-from resource_path import resource_path
+from resource_path import resource_path, get_user_data_dir
 
 logger = get_logger(__name__)
 
@@ -509,6 +511,9 @@ def _handle_hardcoded_command(message):
     return False
 
 
+_terminate_once = threading.Lock()
+
+
 def _terminate(reason, say_goodbye=False):
     """End the process, having first stopped everything Jarvis itself owns —
     the microphone and the loopback control bridge — so nothing of Jarvis's
@@ -531,7 +536,13 @@ def _terminate(reason, say_goodbye=False):
     end is the actual point of this function, and one misbehaving cleanup
     step raising must never be able to leave it unreached — that would trade
     a clean exit for a process that silently keeps running in the
-    background, exactly what this exists to prevent."""
+    background, exactly what this exists to prevent.
+
+    Guarded to run once: two independent watchdogs (the app window's process
+    exiting, eel's own websocket bookkeeping) can both notice the same close
+    within moments of each other."""
+    if not _terminate_once.acquire(blocking=False):
+        return
     logger.info("Shutting down (%s)", reason)
     if say_goodbye:
         try:
@@ -1007,6 +1018,41 @@ def _start_close_watchdog():
     threading.Thread(target=watch, name="jarvis-close-watchdog", daemon=True).start()
 
 
+def _launch_chrome_app(url, profile_dir):
+    """Launch the app window ourselves rather than letting eel.start() do it,
+    so we keep the Popen handle. eel's own launch-and-forget leaves window-
+    close detection entirely to the websocket bookkeeping above, which this
+    app has seen fail to notice a real close — most likely a stale entry in
+    eel._websockets from gevent's scheduling being starved (see
+    _on_window_close's docstring) never getting pruned, so the "any
+    connections left?" check never legitimately reaches zero again for the
+    rest of that process's life. Watching the actual OS process exit instead
+    sidesteps eel/gevent entirely.
+
+    Returns the Popen, or None if Chrome isn't installed (caller falls back
+    to the default browser)."""
+    path = eel_chrome.find_path()
+    if not path:
+        return None
+    return subprocess.Popen(
+        [path, f'--app={url}', '--disable-http-cache', f'--user-data-dir={profile_dir}'],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
+
+
+def _start_process_watchdog(proc):
+    """Block on the app window's own process exiting — a plain OS-level
+    signal, true the instant the user closes it regardless of anything eel
+    or gevent has or hasn't noticed. The primary close-detection path
+    whenever Chrome launched successfully; _on_window_close and
+    _start_close_watchdog remain as a best-effort fallback for the case
+    where there's no such process to watch (the default-browser path)."""
+    def watch():
+        proc.wait()
+        _terminate("window closed (process exited)")
+
+    threading.Thread(target=watch, name="jarvis-close-process-watchdog", daemon=True).start()
+
+
 def main():
     """Start the speech loop, the control bridge, voice input, and the UI."""
     if getattr(sys, "frozen", False):
@@ -1023,16 +1069,25 @@ def main():
     if not jarvis_config.is_configured():
         print("[jarvis] Not connected to FreeClaw yet - run setup.py first.")
 
-    try:
-        eel.start('index.html', size=(1200, 800), port=8080, mode='chrome',
-                  cmdline_args=['--disable-http-cache'], block=True,
-                  close_callback=_on_window_close)
-    except EnvironmentError:
-        # eel raises this when it cannot find Chrome. The UI is an ordinary web
-        # page, so any browser will do — just open it rather than giving up.
+    # A dedicated profile keeps this launch from being absorbed by an
+    # already-running Chrome via its single-instance IPC: without one, when
+    # the user has Chrome open for regular browsing, --app is silently
+    # ignored and the page opens as an ordinary tab there instead of its own
+    # app window.
+    chrome_profile_dir = os.path.join(get_user_data_dir(), "chrome-profile")
+    os.makedirs(chrome_profile_dir, exist_ok=True)
+
+    # Launched ourselves (mode=None below) rather than via eel's mode='chrome'
+    # so we keep the process handle — see _launch_chrome_app / _start_process_watchdog.
+    chrome_proc = _launch_chrome_app('http://localhost:8080/index.html', chrome_profile_dir)
+    if chrome_proc is not None:
+        _start_process_watchdog(chrome_proc)
+    else:
         logger.warning("Chrome not found, falling back to the default browser")
         print("[jarvis] Chrome not found - opening in your default browser.")
         webbrowser.open('http://localhost:8080/index.html')
+
+    try:
         eel.start('index.html', size=(1200, 800), port=8080, mode=None,
                   block=True, close_callback=_on_window_close)
     except (SystemExit, KeyboardInterrupt):
