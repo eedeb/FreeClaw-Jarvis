@@ -1702,9 +1702,17 @@ body.widgets-active {
 }
 
 /* Reset button reuses .settings-button's whole look (see above) and only
-   overrides position, so the pair sit side by side, evenly spaced. */
+   overrides position. Stacked directly above the settings button rather
+   than beside it: right: 70px is #text-input-container's own spot (the chat
+   bubble next to the message box) — same corner, and its z-index of 1000
+   beats this button's inherited 999, so it silently painted on top there.
+   #text-input-container also expands to 300px wide, growing leftward, on
+   hover/focus — anything sharing its bottom:20px row anywhere in that range
+   would get covered again the moment someone starts typing. A different row
+   sidesteps the whole width-changing element rather than chasing its edge. */
 .reset-button {
-    right: 70px;
+    right: 20px;
+    bottom: 70px;
 }
 
 .reset-button.spinning svg {
