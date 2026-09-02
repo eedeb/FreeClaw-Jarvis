@@ -23,6 +23,7 @@ a lock-guarded flag the worker checks each frame.
 """
 
 import queue
+import re
 import threading
 import time
 from collections import deque
@@ -47,15 +48,33 @@ PREROLL_FRAMES = 15  # 300ms
 # Endpointing. TRAILING_SILENCE_MS of no voiced frames (per webrtcvad) ends
 # the capture — this is what "optimised for fastest response" mostly comes
 # down to: no fixed multi-second recording window, just "stopped talking".
+# 600ms cut people off mid-sentence on an ordinary breath or a mid-thought
+# pause, which is what "choppy" mostly turned out to mean — this is the
+# actual latency/naturalness trade-off knob: shorter feels snappier for a
+# one-word answer, longer feels less interruptive for a real sentence.
 # MIN/MAX are safety rails: too short to be a real command, or long enough
 # that something has gone wrong and the mic shouldn't stay open forever.
-TRAILING_SILENCE_MS = 600
+TRAILING_SILENCE_MS = 900
 MIN_UTTERANCE_S = 0.35
 MAX_UTTERANCE_S = 12.0
 
 # openWakeWord's score crosses this to count as a detection. Its own examples
 # use 0.5; lower catches more true positives at the cost of more false ones.
 WAKE_THRESHOLD = 0.5
+
+# What tiny.en hallucinates from silence or a short noise burst: no real word,
+# just a stray "." or a run of them ("......"), sometimes "you" or similar.
+# _is_meaningful is deliberately narrow (reject only punctuation-only output)
+# rather than trying to blocklist every hallucinated phrase — a real one-word
+# reply ("Yes.", "Stop.") must still get through.
+_NO_WORD_CHARS = re.compile(r"^[\s.,!?;:\-]*$")
+
+
+def _is_meaningful(text):
+    """False for whisper's silence/noise hallucinations - a bare ".", "...",
+    or nothing at all - which would otherwise be sent to FreeClaw as if the
+    user had actually said something."""
+    return bool(text) and not _NO_WORD_CHARS.match(text)
 
 STATE_ARMED = "armed"
 STATE_CAPTURING = "capturing"
@@ -361,11 +380,15 @@ class HotwordListener:
             except Exception:
                 logger.exception("Transcription failed")
 
+        meaningful = _is_meaningful(text)
+        if text and not meaningful:
+            logger.info("Discarding non-word transcript: %r", text)
+
         with self._lock:
             # Only re-arm automatically if nothing else (a turn starting)
             # asked for a pause in the meantime.
             still_transcribing = self._state == STATE_TRANSCRIBING
-        if text:
+        if meaningful:
             try:
                 self.on_transcript(text)
             except Exception:

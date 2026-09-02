@@ -64,6 +64,18 @@
 </head>
 
 <body>
+    <!-- Reset Conversation Button -->
+    <button id="reset-button" class="settings-button reset-button" title="Clear the conversation">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="23 4 23 10 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            <polyline points="1 20 1 14 7 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+    </button>
+
     <!-- Settings Button -->
     <button id="settings-button" class="settings-button" title="Settings">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -367,7 +379,25 @@
 
             // Initialize settings panel
             initSettingsPanel();
+            initResetButton();
         });
+
+        // Reset-conversation button — same effect as saying or typing "clear
+        // the conversation" (see main.py's hard-coded commands), reachable
+        // with a click. A brief spin on the icon is the only feedback here;
+        // the actual "Done. The conversation is cleared, sir." appears (and
+        // is spoken) once FreeClaw answers, the same as any other reply.
+        function initResetButton() {
+            const resetButton = document.getElementById('reset-button');
+            if (!resetButton) return;
+            resetButton.addEventListener('click', function () {
+                resetButton.classList.add('spinning');
+                setTimeout(() => resetButton.classList.remove('spinning'), 600);
+                if (typeof eel !== 'undefined' && eel.reset_conversation) {
+                    eel.reset_conversation();
+                }
+            });
+        }
 
         // Function to show memory saved indicator (global for eel access)
         function showMemorySavedIndicator() {

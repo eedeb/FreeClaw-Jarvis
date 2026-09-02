@@ -148,7 +148,15 @@ async def _speech_task(text):
 
 
 def speak_text(text):
-    """Speak `text`, returning once it has finished. Safe from any thread."""
+    """Speak `text`, returning once it has finished. Safe from any thread.
+
+    Called once per sentence during a reply (see _run_turn) rather than once
+    for the whole thing — each call blocks until its own audio actually
+    finishes, so back-to-back calls play in order with nothing to cut off.
+    vocalize.stop() here is for the cross-turn case: a new turn starting
+    while an old one's last sentence is still audible (typed input can start
+    one mid-speech; the wake-word path can't, since the mic stays paused
+    through a whole turn)."""
     if not text or not text.strip():
         return
     if jarvis_config.load().get("do_not_disturb"):
@@ -162,6 +170,29 @@ def speak_text(text):
         future.result()
     except Exception:
         logger.exception("Speech failed")
+
+
+# Sentence boundary = terminal punctuation followed by actual whitespace.
+# Deliberately not "punctuation at the end of the buffer so far" — the token
+# stream pauses there constantly (mid-sentence, an abbreviation, a decimal
+# number), and treating that as a real boundary would speak a fragment and
+# then have to start a new utterance for what turns out to be the same
+# sentence's second half.
+_SENTENCE_BOUNDARY_RE = re.compile(r"[.!?]+\s+")
+
+
+def _split_ready_sentences(buffer):
+    """(complete sentences, unfinished remainder) — the remainder is never
+    spoken here; it waits for more text or, at the end of the turn, gets
+    spoken as whatever's left. See _run_turn."""
+    sentences = []
+    pos = 0
+    for m in _SENTENCE_BOUNDARY_RE.finditer(buffer):
+        piece = buffer[pos:m.end()].strip()
+        if piece:
+            sentences.append(piece)
+        pos = m.end()
+    return sentences, buffer[pos:]
 
 
 # ── TOOL-CALL VISIBILITY ─────────────────────────────────────
@@ -320,12 +351,20 @@ def _run_turn(message):
     and the "TOOL-CALL VISIBILITY" section above. The mic is paused for the
     duration: partly so Jarvis can't hear himself over the speakers during the
     reply, partly because there is nothing useful a second wake word could do
-    while a turn is already running (process_text_input would just refuse it)."""
+    while a turn is already running (process_text_input would just refuse it).
+
+    Speech is sentence-chunked rather than one call for the whole reply: the
+    previous design waited for the entire turn — every tool call, the whole
+    reply — before saying a word, which for anything longer than a one-liner
+    read as Jarvis having gone silent. Each complete sentence is spoken the
+    moment it's formed, while the rest of the reply (and any further tool
+    calls) is still streaming in behind it."""
     global _turn_active
     if listener is not None:
         listener.pause()
 
     text_parts = []
+    speech_buffer = ""
     final_reply = None
     _activity_start()
 
@@ -335,8 +374,13 @@ def _run_turn(message):
             etype = event.get("type")
 
             if etype == "token":
-                text_parts.append(event.get("text", ""))
+                piece = event.get("text", "")
+                text_parts.append(piece)
                 _maybe_show_partial("".join(text_parts))
+                speech_buffer += piece
+                ready, speech_buffer = _split_ready_sentences(speech_buffer)
+                for sentence in ready:
+                    speak_text(sentence)
 
             elif etype == "tool_call":
                 label = _friendly_tool_label(event.get("name", ""))
@@ -381,7 +425,23 @@ def _run_turn(message):
         reply = "I didn't get a response that time, sir."
 
     show_response(reply)
-    speak_text(reply)
+
+    if final_reply is not None:
+        # Error or stopped — this path never touched the sentence loop above,
+        # so none of it has been spoken yet.
+        speak_text(reply)
+    else:
+        # Success: every complete sentence already went out as it formed.
+        # What's left is whatever never reached a trailing sentence boundary
+        # — a reply with no terminal punctuation, or a short one that arrived
+        # in a single piece.
+        tail = speech_buffer.strip()
+        if tail:
+            speak_text(tail)
+        elif not text_parts:
+            # No tokens at all — a tool-calls-only turn, or a genuinely empty
+            # reply — so the fallback message above was never spoken either.
+            speak_text(reply)
 
     if listener is not None:
         listener.resume()
@@ -449,19 +509,56 @@ def _handle_hardcoded_command(message):
     return False
 
 
-def _shutdown():
-    """Say goodbye and end the process.
+def _terminate(reason, say_goodbye=False):
+    """End the process, having first stopped everything Jarvis itself owns —
+    the microphone and the loopback control bridge — so nothing of Jarvis's
+    is left running once this returns. Shared by the "shut down" command and
+    by the window being closed (see main()'s close_callback): both mean the
+    same thing, just said two different ways.
 
-    os._exit() rather than sys.exit(): this runs on its own background
-    thread, and a SystemExit raised there only ends that one thread — the
-    main thread sitting in eel.start() would never notice. os._exit() is a
-    hard stop with no cleanup, which is fine here; nothing in this app holds
-    a resource that needs more than "the process is gone now" to release."""
-    reply = "Shutting down. Goodbye, sir."
-    show_response(reply)
-    speak_text(reply)
-    logger.info("Shutting down (hard-coded command)")
+    Not FreeClaw, and not its MCP server subprocess: that process belongs to
+    FreeClaw, which keeps its MCP servers running across the app's own
+    lifetime by design (auto-respawned if it dies) — it isn't Jarvis's to
+    stop, and doing so would just make FreeClaw start it again on the next
+    tool call.
+
+    os._exit() rather than sys.exit(): this can run from a background thread
+    (a command) or from eel's own internal thread (the window closing), and a
+    plain SystemExit only ends whichever thread raises it — the main thread
+    sitting in eel.start() would never notice.
+
+    Every step below is its own try/except, on purpose: os._exit(0) at the
+    end is the actual point of this function, and one misbehaving cleanup
+    step raising must never be able to leave it unreached — that would trade
+    a clean exit for a process that silently keeps running in the
+    background, exactly what this exists to prevent."""
+    logger.info("Shutting down (%s)", reason)
+    if say_goodbye:
+        try:
+            reply = "Shutting down. Goodbye, sir."
+            show_response(reply)
+            speak_text(reply)
+        except Exception:
+            logger.exception("Goodbye message failed")
+    if listener is not None:
+        try:
+            listener.stop()
+        except Exception:
+            logger.exception("Stopping the listener failed")
+    try:
+        control_server.stop()
+    except Exception:
+        logger.exception("Stopping the control bridge failed")
+    try:
+        vocalize.stop()
+    except Exception:
+        logger.exception("Stopping playback failed")
     os._exit(0)
+
+
+def _shutdown():
+    """The "shut down" hard-coded command — see _handle_hardcoded_command."""
+    _terminate("hard-coded command", say_goodbye=True)
 
 
 def _clear_conversation():
@@ -482,6 +579,17 @@ def _clear_conversation():
     speak_text(reply)
     if listener is not None:
         listener.resume()
+
+
+@eel.expose
+def reset_conversation():
+    """The UI's reset button — same effect as saying or typing "clear the
+    conversation", just reachable without talking to Jarvis first. Threaded
+    for the same reason process_text_input's turns are: this call has to
+    return to the browser immediately, not block on the FreeClaw round trip."""
+    threading.Thread(target=_clear_conversation, name="jarvis-clear-btn",
+                     daemon=True).start()
+    return True
 
 
 @eel.expose
@@ -839,6 +947,66 @@ def _start_listener():
     threading.Thread(target=load_and_arm, name="jarvis-listen-startup", daemon=True).start()
 
 
+def _on_window_close(page, sockets):
+    """eel's close_callback — fires whenever a websocket disconnects, which
+    for this app means the window was closed. `sockets` is what's still
+    connected, not what just dropped, so this only actually shuts down once
+    nothing is — a reload or a momentary reconnect must not kill the app out
+    from under itself, even though in practice this UI only ever opens the
+    one window.
+
+    In testing this did not reliably fire in the full app the way it does in
+    an eel app with nothing else going on — plausibly because eel's gevent
+    scheduling was never monkey-patched in (neither eel nor bottle_websocket
+    call gevent.monkey.patch_all()), and this app's other, ordinary OS
+    threads — the microphone, the control bridge, the speech loop — aren't
+    gevent-aware and can starve it. Kept as the fast path for when it does
+    fire; _start_close_watchdog below is what actually guarantees the window
+    closing ends the process."""
+    if sockets:
+        return
+    _terminate("window closed (close_callback)")
+
+
+def _start_close_watchdog():
+    """Poll eel's own connected-sockets list directly, on a plain thread —
+    not dependent on gevent's scheduling at all, unlike _on_window_close
+    above. This is the mechanism that's actually guaranteed to notice the
+    window closing and end the process; see that function's docstring for
+    why the callback alone wasn't enough.
+
+    Waits for a first real connection before it will ever consider shutting
+    down — eel._websockets starts empty before the window has even opened,
+    and this must not race that. `eel._websockets` is a private attribute,
+    so a future eel version is free to rename or drop it; if that ever
+    raises, this thread quietly stops rather than crashing the app, leaving
+    _on_window_close as the sole (best-effort) mechanism."""
+    def watch():
+        connected_once = False
+        empty_checks = 0
+        while True:
+            time.sleep(1.5)
+            try:
+                count = len(eel._websockets)
+            except Exception:
+                logger.exception("Close watchdog couldn't read eel._websockets")
+                return
+            if count > 0:
+                if not connected_once:
+                    logger.debug("Close watchdog: first connection seen")
+                connected_once = True
+                empty_checks = 0
+                continue
+            if not connected_once:
+                continue
+            empty_checks += 1
+            if empty_checks >= 2:  # ~3s of nothing connected
+                _terminate("window closed (watchdog)")
+                return
+
+    threading.Thread(target=watch, name="jarvis-close-watchdog", daemon=True).start()
+
+
 def main():
     """Start the speech loop, the control bridge, voice input, and the UI."""
     if getattr(sys, "frozen", False):
@@ -850,13 +1018,15 @@ def main():
     _start_control_bridge()
     vocalize.warm_up()
     _start_listener()
+    _start_close_watchdog()
 
     if not jarvis_config.is_configured():
         print("[jarvis] Not connected to FreeClaw yet - run setup.py first.")
 
     try:
         eel.start('index.html', size=(1200, 800), port=8080, mode='chrome',
-                  cmdline_args=['--disable-http-cache'], block=True)
+                  cmdline_args=['--disable-http-cache'], block=True,
+                  close_callback=_on_window_close)
     except EnvironmentError:
         # eel raises this when it cannot find Chrome. The UI is an ordinary web
         # page, so any browser will do — just open it rather than giving up.
@@ -864,7 +1034,7 @@ def main():
         print("[jarvis] Chrome not found - opening in your default browser.")
         webbrowser.open('http://localhost:8080/index.html')
         eel.start('index.html', size=(1200, 800), port=8080, mode=None,
-                  block=True)
+                  block=True, close_callback=_on_window_close)
     except (SystemExit, KeyboardInterrupt):
         pass
     except Exception as e:
